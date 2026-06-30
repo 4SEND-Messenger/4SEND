@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="4SEND, 4send, changelog, 4send changelog, 4send обновления">
+    <meta name="description" content="4SEND Changelog - позволяет видеть первее всех последния обновление мессенджера.">
+    <title>4SEND Changelog</title>
+    <link rel="icon" href="https://z-cdn-media.chatglm.cn/files/28adda83-b608-48f1-976c-5acec2255df4.png?auth_key=1878538220-424e9c63584f4b14a363a5d621a36430-0-bc0b5edbcaf0d08d9b81303f1a4a97eb" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #4c1d95 #0a0a0f;
+        }
+
+        html {
+            background-color: #0a0a0f;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0f;
+            background-image: 
+                radial-gradient(ellipse at 10% 20%, rgba(88, 28, 135, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            color: #e2e0e8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-tag {
+            font-size: 12px;
+            font-weight: 500;
+            color: #a78bfa;
+            background: rgba(124, 58, 237, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .page-title {
+            font-size: 40px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: #8b8698;
+            font-weight: 400;
+            margin-bottom: 48px;
+        }
+
+        .update-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .update-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #7c3aed, #c084fc, #7c3aed);
+            opacity: 0.8;
+        }
+
+        .update-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.1);
+            border-color: rgba(124, 58, 237, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: #d8b4fe;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 8px;
+            color: #9ca3af;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #7c3aed;
+            margin-top: 28px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .section-title i {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .changes-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .changes-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #d1d0d6;
+            padding-left: 4px;
+        }
+
+        .changes-list li::before {
+            content: '';
+            flex-shrink: 0;
+            width: 6px;
+            height: 6px;
+            margin-top: 9px;
+            background: #7c3aed;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
+        }
+
+        .note-box {
+            margin-top: 28px;
+            padding: 16px 20px;
+            background: rgba(124, 58, 237, 0.08);
+            border-left: 3px solid #7c3aed;
+            border-radius: 0 12px 12px 0;
+            font-size: 14px;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        .versioning-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 32px;
+            margin-top: 64px;
+        }
+
+        .versioning-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .versioning-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .version-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .version-item-code {
+            font-size: 24px;
+            font-weight: 700;
+            color: #a855f7;
+            font-family: monospace;
+        }
+
+        .version-item-desc {
+            font-size: 13px;
+            color: #8b8698;
+            line-height: 1.4;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: #4b4555;
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        @media (max-width: 640px) {
+            .page-title {
+                font-size: 28px;
+            }
+            .update-card {
+                padding: 24px;
+            }
+            .card-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <a href="#" class="logo">
+                <img src="ico.png" alt="4SEND" class="logo-icon">
+                <span class="logo-text">4SEND</span>
+                <span class="logo-tag">Changelog</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Обновления</h1>
+        <p class="page-subtitle">История развития мессенджера 4SEND</p>
+
+                <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    1.0.1
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Усилена защита Socket.IO: добавлена обязательная проверка JWT при подключении и исключена возможность подмены отправителя (sender всегда берётся с сервера)</li>
+                <li>Добавлена серверная защита от NoSQL-инъекций: рекурсивная очистка входных данных в REST и Socket-событиях</li>
+                <li>Усилена защита link preview от SSRF: запрещены приватные/специальные IP, ограничены протоколы и порты, отключены редиректы, добавлены лимиты по таймауту и размеру ответа</li>
+                <li>Усилена безопасность загрузки файлов: введён строгий allowlist расширений и проверка сигнатуры файла (не доверяем только расширению)</li>
+                <li>Исправлено небезопасное поведение шифрования: валидируется при старте, шифрование/дешифрование работает fail-closed</li>
+                <li>Улучшена корректность определения IP клиента: добавлен единый getClientIp() вместо доверия к сырым заголовкам</li>
+                <li>Добавлен rate-limit для сокетов с привязкой к username (защита от обхода лимитов переподключениями)</li>
+                <li>Для исчезающих сообщений добавлен TTL-индекс в базе как резервный механизм (при этом текущая логика с setTimeout сохранена)</li>
+            </ul>
+                </div>   
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    1.0.0
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-rocket"></i>
+                    Обновление
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлена возможность добавлять сразу несколько аккаунтов</li>
+                <li>Добавлено автоудаление сообщений через время</li>
+                <li>Добавлен AI-стилизатор сообщений</li>
+                <li>Добавлены звонки между пользователями (peer-to-peer)</li>
+                <li>Добавлена поддержка английского языка</li>
+                <li>Добавлена поддержка неотправленных сообщений</li>
+                <li>Добавлен счетчик непрочитанных сообщений на иконке приложения (Desktop, IOS, Android)</li>
+                <li>Добавлена система автоматического сохранения недописанного текста при резком закрытии приложения</li>
+                <li>Добавлено контекстное меню в галерее сообщений</li>
+                <li>Добавлено превью для ссылок в сообщениях</li>
+                <li>Добавлена функция упоминаний участников в группах</li>
+                <li>Добавлена виртулизация волн (громкости голоса) при записи голосовых сообщений</li>
+                <li>Добавлена фоновая валидация целостности структуры файлов при их передаче, исключающая повреждение данных при скачивании</li>
+                <li>Добавлен детектор скриншотов на Linux, Android</li>
+                <li>Добавлен список участников в модальное окно группы</li>
+                <li>Добавлено открытие профиля по клику на имя в чате</li>
+                <li>Добавлен ползунок для быстрой перемотки чата</li>
+                <li>Добавлена статистика для каждого чата</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Исправлен баг, что можно было создать аккаунт\канал\групу с юзернеймом из цифр</li>
+                <li>Исправлен баг, что открывалось модальное окно для вступления в канал\группу для неавторизованных пользователей</li>
+                <li>Исправлено выделение текста при включенной защите от копирования</li>
+                <li>Исправлены случайные выходы из аккаунта</li>
+                <li>Исправлено получение аватаров для профилей</li>
+                <li>Исправлен баг с контекстным меню в чате, когда оно могло само по себе закрыться</li>
+                <li>Исправлена доставка push-уведомлений на мобильных устройствах, добавлена валидация и очистка невалидных токенов</li>
+                <li>Исправлены пользовательские сессии, добавлено очищение неактивных сессий</li>
+                <li>Исправлен повтор уведомлений при выключенном повторе уведомлений</li>
+                <li>Исправлено около 50 точек, где пользовательские данные попадали без экранирования</li>
+                <li>Исправлен баг с двойным обработчиком микрофона</li>
+                <li>Исправлн баг с некорректным отображением статуса печатает</li>
+                <li>Исправлен баг, когда сообщения отправлялись со второго раза из-за нестабильности сети (теперь таких случаев меньше)</li>
+                <li>Исправлен баг с потерей сообщений после сворачивания мессенджера</li>
+                <li>Исправлен баг с пропаданием трех точек в шапке чата</li>
+                <li>Исправлен рассинхрон сообщений на одном аккаунте с разных устройств</li>
+                <li>Исправлен баг, когда можно было зарегистрировать аккаунт приняв только один пункт (условия или политику)</li>
+                <li>Исправлен баг, когда поля ввода имени и пароля вылазили за форму на некоторых устройствах</li>
+                <li>Исправлены редкие баги с некорректным отображением анимаций</li>
+                <li>Исправлен drag-and-drop</li>
+                <li>Исправлен баг, когда пересланные сообщения отображались без имени оригинального автора на некоторых устройствах</li>
+                <li>Исправлен баг, когда поиск по истории чата игнорировал слова, написанные капсом или с опечатками</li>
+                <li>Исправлен баг, когда при удалении сообщения у себя оно могло остаться видимым в общем списке диалогов</li>
+                <li>Исправлен баг, когда голосовое сообщение продолжало воспроизводиться после закрытия чата свайпом</li>
+                <li>Исправлен баг с вечно растущим кэшом IndexDB</li>
+                <li>Исправлен баг, когда при вставке картинки напрямую из буфера обмена (Ctrl+V) она отправлялась как файл без возможности добавить подпись (Linux)</li>
+                <li>Исправлен баг, когда при прослушивании голосового сообщения на ускорении 2х звук мог прерываться мелкими щелчками</li>
+            </ul>
+            
+            <div class="section-title">
+                <i class="fas fa-ellipsis-h"></i>
+                Прочее
+            </div>
+            <ul class="changes-list">
+                <li>Оптимизирована работа с базой данных, частичный переход на свою базу данных (Rust)</li>
+                <li>Улучшена стабильность внутренней нейросети</li>
+                <li>Изменен звук уведомлений</li>
+                <li>Обновлены множество модальных окон (добавлены анимации, изменен стиль)</li>
+                <li>Улучшена стабильность и скорость работы всего мессенджера</li>
+                <li>Изменена и улучшена работа с JWT токенами</li>
+                <li>Изменен шрифт в некоторых частях мессенджера</li>
+                <li>Оптимизирован мобильный клиент, уменьшена частота разрыва соединеий</li>
+                <li>Оптимизированы внутренние API-эндпоинты для снижения сетевого тайм-аута</li>
+                <li>Снижена нагрузка на CPU при фоновом обновлении данных</li>
+                <li>Улучшено управление оперативной памятью (устранены потенциальные утечки утечки RAM)</li>
+                <li>Переработан алгоритм кэширования статических ресурсов на стороне сервера</li>
+                <li>Переработан алгоритм переподключения к сокетам после выхода устройства из спящего режима</li>
+                <li>Усилена защита от инъекций при парсинге входящих ссылок и превью сайтов</li>
+                <li>Улучшена очистка временных файлов и сессионных ключей из оперативной памяти</li>
+                <li>Переработан пайплайн декодирования изображений для снижения нагрузки на GPU при быстром скролле</li>
+                <li>Оптимизирован алгоритм сжатия аудиопотока для голосовых сообщений при низкой скорости сети</li>
+                <li>Оптимизированы хит-боксы (зоны нажатия) для мелких элементов управления в меню настроек</li>
+                <li>Улучшено сглаживание кастомных иконок на экранах с низким разрешением</li>
+                <li>Сообщения теперь отправляются на долю секунды быстрее за счет оптимизации отправки данных</li>
+                <li>Усилена обфускация и защита рантайм-памяти от потенциального чтения сторонними отладочными процессами на непривилегированных устройствах</li>
+            </ul>
+                </div>   
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.8
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>В список чатов рядом с временем добавлены галочки прочитанности</li>
+                <li>Добавлено окно подтверждения при выходе из аккаунта</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Исправлено выделение, изменен цвет на фиолетовый</li>
+                <li>Исправлен жест назад на iOS</li>
+                <li>Исправлена прокрутка в модалке активных сессий на мобильных устройствах</li>
+                <li>Исправлено налезание иконок в полях ввода авторизации</li>
+            </ul>
+                </div>        
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.7
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>В настройки конфиденциальности добавлена функция автовыхода</li>
+                <li>В модалку предпросмотра фотографий добавлена возможность редактировать фотографию</li>
+                <li>В модальное окно поделиться добавлена еще одна кнопка, которая открывает Telegram, что бы вы могли быстро поделиться мессенджером</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Исправлен баг, из за которого во время отправки медиа, если зайти в другой чат, то медиа отправится в тот чат, в который вы зашли</li>
+                <li>Исправлена проблема с повтором уведомлений. Просмотреные уведомления приходили по второму разу</li>
+                <li>Исправлены жесты назад на Android</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-ellipsis-h"></i>
+                Прочее
+            </div>
+            <ul class="changes-list">
+                <li>Обновлена главная страница мессенджера</li>
+            </ul>
+                </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.6
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>Контекстное меню стало красивее и функциональнее</li>
+                <li>В настройки чатов добавлена функция повтора уведомлений</li>
+                <li>В модалке профиля теперь можно одним нажатием копировать @username</li>
+                <li>Теперь текст можно выделять прямо внутри сообщения и удобно копировать</li>
+                <li>Добавлен баннер над чатами, с помощью которого можно пригласить друзей</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-palette"></i>
+                Интерфейс
+            </div>
+            <ul class="changes-list">
+                <li>Строка поиска в списке чатов получила новый дизайн</li>
+            </ul>
+                </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.5
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлена информация о скриншотах в чатах и группах (только для десктопной версии мессенджера, в скором времени сделаем и для андроидов)</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-palette"></i>
+                Интерфейс
+            </div>
+            <ul class="changes-list">
+                <li>Обновлена шапка чата (три точки), теперь можно быстро открыть профиль, выключить уведомления, посмотреть статистику чата и удалить чат.</li>
+                <li>Перенесены пункты информации пересылки, запрета копирования и информации скриншотов в единую модалку приватности чата.</li>
+                <li>Обновлена модалка удаления чата (изменены иконка и кнопки)</li>
+            </ul>
+        </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.4
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Производительность
+            </div>
+            <ul class="changes-list">
+                <li>Переписана работа с базой данных (переход на Aggregation Pipeline)</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-ellipsis-h"></i>
+                Прочее
+            </div>
+            <ul class="changes-list">
+                <li>Удалены мини-игры и встроенный музыкальный плеер</li>
+            </ul>
+        </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.3
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Исправлено отображение иконок</li>
+                <li>Исправлена некликабельность кнопок регистрации/входа на планшетах</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-shield-halved"></i>
+                Безопасность
+            </div>
+            <ul class="changes-list">
+                <li>Исправление утечки времени захода</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлена возможность перемещать закрепленные чаты</li>
+                <li>По клике на версию мессенджера в бургер меню открывается история обновлений</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-ellipsis-h"></i>
+                Прочее
+            </div>
+            <ul class="changes-list">
+                <li>Внесены правки в условия пользования и политику</li>
+                <li>Проведена работа под капотом</li>
+            </ul>
+        </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.2
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bug"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Исправлено отображение никнеймов при пересылке сообщений</li>
+                <li>Исправлен баг с перекрытием элементов в галерее</li>
+                <li>Исправлены и другие мелкие ошибки, которые не будут учтены</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-palette"></i>
+                Интерфейс
+            </div>
+            <ul class="changes-list">
+                <li>Изменена цветовая тема модалки профиля и галереи</li>
+                <li>Добавлена возможность просматривать аватарки в профиле</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                Функциональность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлены уведомления для архива (Чат перенесен в архив / Чат вынесен из архива)</li>
+                <li>Добавлена блокировка кнопок записи по приватности (красятся в серый, если собеседник запретил отправку голосовых/видеосообщений)</li>
+            </ul>
+        </div>
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    b0.6.1
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-shield-halved"></i>
+                Безопасность
+            </div>
+            <ul class="changes-list">
+                <li>Закрыты известные лазейки в сообщениях</li>
+                <li>Исправлен баг с тем, что можно было подсмотреть участников приватной группы, не являясь ее участником</li>
+                <li>Усилены лимиты на отправку системных запросов</li>
+                <li>Исправлен баг с тем, что можно было подделать статус «печатает» от имени другого пользователя</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Производительность
+            </div>
+            <ul class="changes-list">
+                <li>Переписан алгоритм загрузки чатов, теперь он работает в десятки раз быстрее, даже если у вас сотни чатов</li>
+                <li>Кэш теперь обновляется корректно и при изменении ника он моментально обновляется в списке чатов</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-play"></i>
+                Медиа
+            </div>
+            <ul class="changes-list">
+                <li>Голосовые и кружочки больше не начнут внезапно играть, если вы уже переключились на другой чат</li>
+                <li>При быстром скролле автопроигрыватель не потеряет позицию</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-pen-ruler"></i>
+                Дизайн и UX
+            </div>
+            <ul class="changes-list">
+                <li>Минимализм в группах: убраны маленькие круглые аватары возле бабла сообщения в группах</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-wrench"></i>
+                Исправления
+            </div>
+            <ul class="changes-list">
+                <li>Корректное удаление сообщений: раньше если вы только отправили сообщение и пытались его удалить, сервер не успевал присвоить ему айди и сообщение удалялось со второго раза</li>
+                <li>Исправили баг, когда при создании новой группы к ней могла случайно прикрепиться аватарка от предыдущей</li>
+            </ul>
+        </div>
+
+        <div class="versioning-card">
+            <div class="versioning-title">
+                <i class="fas fa-circle-info"></i>
+                Нумерация обновлений
+            </div>
+            <div class="versioning-grid">
+                <div class="version-item">
+                    <div class="version-item-code">1</div>
+                    <div class="version-item-desc">Глобальные обновления</div>
+                </div>
+                <div class="version-item">
+                    <div class="version-item-code">0</div>
+                    <div class="version-item-desc">Незначительные обновления</div>
+                </div>
+                <div class="version-item">
+                    <div class="version-item-code">1</div>
+                    <div class="version-item-desc">Минорные обновления и багфиксы</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        4SEND &copy; 2026
+    </footer>
+<script>
+    (function(){
+        var lang = localStorage.getItem('4send_language');
+        if (lang !== 'en') return;
+        
+        document.documentElement.lang = 'en';
+        document.title = '4SEND Changelog';
+
+        var uiDict = {
+            'Обновления': 'Updates',
+            'История развития мессенджера 4SEND': '4SEND messenger development history',
+            'Обновление': 'Update',
+            'Багфикс': 'Bugfix',
+            'Функциональность': 'Features',
+            'Исправления': 'Fixes',
+            'Прочее': 'Other',
+            'Интерфейс': 'Interface',
+            'Производительность': 'Performance',
+            'Безопасность': 'Security',
+            'Медиа': 'Media',
+            'Дизайн и UX': 'Design & UX',
+            'Нумерация обновлений': 'Versioning system',
+            'Глобальные обновления': 'Major updates',
+            'Незначительные обновления': 'Minor updates',
+            'Минорные обновления и багфиксы': 'Patches and bugfixes'
+        };
+
+        var changesDict = {
+            "Усилена защита Socket.IO: добавлена обязательная проверка JWT при подключении и исключена возможность подмены отправителя (sender всегда берётся с сервера)": "Improved Socket.IO security: added mandatory JWT verification on connection and prevented sender spoofing (sender is always set by the server)",
+            "Добавлена серверная защита от NoSQL-инъекций: рекурсивная очистка входных данных в REST и Socket-событиях": "Added server-side protection against NoSQL injection: recursive sanitization of incoming data in REST and Socket events",
+            "Усилена защита link preview от SSRF: запрещены приватные/специальные IP, ограничены протоколы и порты, отключены редиректы, добавлены лимиты по таймауту и размеру ответа": "Improved link preview SSRF protection: blocked private/special IPs, restricted protocols and ports, disabled redirects, and added strict timeout and response size limits",
+            "Усилена безопасность загрузки файлов: введён строгий allowlist расширений и проверка сигнатуры файла (не доверяем только расширению)": "Improved file upload security: introduced a strict extension allowlist and file signature validation (not trusting the extension alone)",
+            "Исправлено небезопасное поведение шифрования: валидируется при старте, шифрование/дешифрование работает fail-closed": "Fixed insecure encryption behavior: the encryption key is validated on startup and encryption/decryption is fail-closed",
+            "Улучшена корректность определения IP клиента: добавлен единый getClientIp() вместо доверия к сырым заголовкам": "Improved client IP detection: added a unified getClientIp() helper instead of trusting raw headers",
+            "Добавлен rate-limit для сокетов с привязкой к username (защита от обхода лимитов переподключениями)": "Added username-based rate limiting for sockets (prevents bypassing limits via reconnects)",
+            "Для исчезающих сообщений добавлен TTL-индекс в базе как резервный механизм (при этом текущая логика с setTimeout сохранена)": "Added a TTL index in the database for disappearing messages as a fallback (while keeping the existing setTimeout logic)",
+            "Добавлена возможность добавлять сразу несколько аккаунтов": "Added the ability to add multiple accounts at once",
+            "Добавлено автоудаление сообщений через время": "Added auto-deletion of messages over time",
+            "Добавлен AI-стилизатор сообщений": "Added AI message stylizer",
+            "Добавлены звонки между пользователями (peer-to-peer)": "Added peer-to-peer calls between users",
+            "Добавлена поддержка английского языка": "Added English language support",
+            "Добавлена поддержка неотправленных сообщений": "Added support for unsent messages",
+            "Добавлен счетчик непрочитанных сообщений на иконке приложения (Desktop, IOS, Android)": "Added unread message counter on the app icon (Desktop, iOS, Android)",
+            "Добавлена система автоматического сохранения недописанного текста при резком закрытии приложения": "Added automatic saving of drafted text upon sudden app closure",
+            "Добавлено контекстное меню в галерее сообщений": "Added context menu in the message gallery",
+            "Добавлено превью для ссылок в сообщениях": "Added link previews in messages",
+            "Добавлена функция упоминаний участников в группах": "Added member mention feature in groups",
+            "Добавлена виртулизация волн (громкости голоса) при записи голосовых сообщений": "Added wave virtualization (voice volume) when recording voice messages",
+            "Добавлена фоновая валидация целостности структуры файлов при их передаче, исключающая повреждение данных при скачивании": "Added background validation of file structure integrity during transfer, preventing data corruption upon download",
+            "Добавлен детектор скриншотов на Linux, Android": "Added screenshot detector on Linux, Android",
+            "Добавлен список участников в модальное окно группы": "Added member list to the group modal window",
+            "Добавлено открытие профиля по клику на имя в чате": "Added profile opening by clicking on a name in the chat",
+            "Добавлен ползунок для быстрой перемотки чата": "Added a slider for fast chat scrolling",
+            "Добавлена статистика для каждого чата": "Added statistics for each chat",
+            "Исправлен баг, что можно было создать аккаунт\\канал\\групу с юзернеймом из цифр": "Fixed a bug where an account/channel/group could be created with a numeric username",
+            "Исправлен баг, что открывалось модальное окно для вступления в канал\\группу для неавторизованных пользователей": "Fixed a bug where the join channel/group modal opened for unauthorized users",
+            "Исправлено выделение текста при включенной защите от копирования": "Fixed text selection when copy protection is enabled",
+            "Исправлены случайные выходы из аккаунта": "Fixed random account logouts",
+            "Исправлено получение аватаров для профилей": "Fixed fetching avatars for profiles",
+            "Исправлен баг с контекстным меню в чате, когда оно могло само по себе закрыться": "Fixed a bug with the chat context menu closing by itself",
+            "Исправлена доставка push-уведомлений на мобильных устройствах, добавлена валидация и очистка невалидных токенов": "Fixed push notification delivery on mobile devices, added validation and cleanup of invalid tokens",
+            "Исправлены пользовательские сессии, добавлено очищение неактивных сессий": "Fixed user sessions, added cleanup of inactive sessions",
+            "Исправлен повтор уведомлений при выключенном повторе уведомлений": "Fixed notification repeat when notification repeat is disabled",
+            "Исправлено около 50 точек, где пользовательские данные попадали без экранирования": "Fixed about 50 points where user data was injected without escaping",
+            "Исправлен баг с двойным обработчиком микрофона": "Fixed a bug with double microphone handler",
+            "Исправлн баг с некорректным отображением статуса печатает": "Fixed a bug with incorrect display of the 'is typing' status",
+            "Исправлен баг, когда сообщения отправлялись со второго раза из-за нестабильности сети (теперь таких случаев меньше)": "Fixed a bug where messages were sent on the second try due to network instability (now fewer such cases)",
+            "Исправлен баг с потерей сообщений после сворачивания мессенджера": "Fixed a bug with message loss after minimizing the messenger",
+            "Исправлен баг с пропаданием трех точек в шапке чата": "Fixed a bug with the disappearance of the three dots in the chat header",
+            "Исправлен рассинхрон сообщений на одном аккаунте с разных устройств": "Fixed message desync on the same account from different devices",
+            "Исправлен баг, когда можно было зарегистрировать аккаунт приняв только один пункт (условия или политику)": "Fixed a bug where an account could be registered by accepting only one item (terms or policy)",
+            "Исправлен баг, когда поля ввода имени и пароля вылазили за форму на некоторых устройствах": "Fixed a bug where username and password input fields overflowed the form on some devices",
+            "Исправлены редкие баги с некорректным отображением анимаций": "Fixed rare bugs with incorrect animation display",
+            "Исправлен drag-and-drop": "Fixed drag-and-drop",
+            "Исправлен баг, когда пересланные сообщения отображались без имени оригинального автора на некоторых устройствах": "Fixed a bug where forwarded messages were displayed without the original author's name on some devices",
+            "Исправлен баг, когда поиск по истории чата игнорировал слова, написанные капсом или с опечатками": "Fixed a bug where chat history search ignored words written in caps or with typos",
+            "Исправлен баг, когда при удалении сообщения у себя оно могло остаться видимым в общем списке диалогов": "Fixed a bug where deleting a message for oneself could leave it visible in the general dialog list",
+            "Исправлен баг, когда голосовое сообщение продолжало воспроизводиться после закрытия чата свайпом": "Fixed a bug where a voice message continued playing after closing the chat with a swipe",
+            "Исправлен баг с вечно растущим кэшом IndexDB": "Fixed a bug with the ever-growing IndexDB cache",
+            "Исправлен баг, когда при вставке картинки напрямую из буфера обмена (Ctrl+V) она отправлялась как файл без возможности добавить подпись (Linux)": "Fixed a bug where pasting an image directly from the clipboard (Ctrl+V) sent it as a file without the ability to add a caption (Linux)",
+            "Исправлен баг, когда при прослушивании голосового сообщения на ускорении 2х звук мог прерываться мелкими щелчками": "Fixed a bug where listening to a voice message at 2x speed could cause the sound to interrupt with small clicks",
+            "Оптимизирована работа с базой данных, частичный переход на свою базу данных (Rust)": "Optimized database operations, partial transition to a custom database (Rust)",
+            "Улучшена стабильность внутренней нейросети": "Improved stability of the internal neural network",
+            "Изменен звук уведомлений": "Changed notification sound",
+            "Обновлены множество модальных окон (добавлены анимации, изменен стиль)": "Updated many modal windows (added animations, changed style)",
+            "Улучшена стабильность и скорость работы всего мессенджера": "Improved stability and speed of the entire messenger",
+            "Изменена и улучшена работа с JWT токенами": "Changed and improved work with JWT tokens",
+            "Изменен шрифт в некоторых частях мессенджера": "Changed font in some parts of the messenger",
+            "Оптимизирован мобильный клиент, уменьшена частота разрыва соединеий": "Optimized mobile client, reduced connection drop frequency",
+            "Оптимизированы внутренние API-эндпоинты для снижения сетевого тайм-аута": "Optimized internal API endpoints to reduce network timeout",
+            "Снижена нагрузка на CPU при фоновом обновлении данных": "Reduced CPU load during background data updates",
+            "Улучшено управление оперативной памятью (устранены потенциальные утечки утечки RAM)": "Improved RAM management (eliminated potential RAM leaks)",
+            "Переработан алгоритм кэширования статических ресурсов на стороне сервера": "Redesigned server-side static resource caching algorithm",
+            "Переработан алгоритм переподключения к сокетам после выхода устройства из спящего режима": "Redesigned socket reconnection algorithm after device wakes from sleep mode",
+            "Усилена защита от инъекций при парсинге входящих ссылок и превью сайтов": "Strengthened injection protection when parsing incoming links and site previews",
+            "Улучшена очистка временных файлов и сессионных ключей из оперативной памяти": "Improved cleanup of temporary files and session keys from RAM",
+            "Переработан пайплайн декодирования изображений для снижения нагрузки на GPU при быстром скролле": "Redesigned image decoding pipeline to reduce GPU load during fast scrolling",
+            "Оптимизирован алгоритм сжатия аудиопотока для голосовых сообщений при низкой скорости сети": "Optimized audio stream compression algorithm for voice messages on low-speed networks",
+            "Оптимизированы хит-боксы (зоны нажатия) для мелких элементов управления в меню настроек": "Optimized hitboxes for small control elements in the settings menu",
+            "Улучшено сглаживание кастомных иконок на экранах с низким разрешением": "Improved anti-aliasing of custom icons on low-resolution screens",
+            "Сообщения теперь отправляются на долю секунды быстрее за счет оптимизации отправки данных": "Messages are now sent a fraction of a second faster due to data transmission optimization",
+            "Усилена обфускация и защита рантайм-памяти от потенциального чтения сторонними отладочными процессами на непривилегированных устройствах": "Strengthened obfuscation and runtime memory protection against potential reading by third-party debugging processes on unprivileged devices",
+            "В список чатов рядом с временем добавлены галочки прочитанности": "Added read checkmarks next to the time in the chat list",
+            "Добавлено окно подтверждения при выходе из аккаунта": "Added a confirmation window when logging out",
+            "Исправлено выделение, изменен цвет на фиолетовый": "Fixed selection, changed color to purple",
+            "Исправлен жест назад на iOS": "Fixed the back gesture on iOS",
+            "Исправлена прокрутка в модалке активных сессий на мобильных устройствах": "Fixed scrolling in the active sessions modal on mobile devices",
+            "Исправлено налезание иконок в полях ввода авторизации": "Fixed icon overlapping in authorization input fields",
+            "В настройки конфиденциальности добавлена функция автовыхода": "Added auto-logout function to privacy settings",
+            "В модалку предпросмотра фотографий добавлена возможность редактировать фотографию": "Added the ability to edit a photo in the photo preview modal",
+            "В модальное окно поделиться добавлена еще одна кнопка, которая открывает Telegram, что бы вы могли быстро поделиться мессенджером": "Added another button to the share modal window that opens Telegram so you can quickly share the messenger",
+            "Исправлен баг, из за которого во время отправки медиа, если зайти в другой чат, то медиа отправится в тот чат, в который вы зашли": "Fixed a bug where if you enter another chat while sending media, the media would be sent to the chat you entered",
+            "Исправлена проблема с повтором уведомлений. Просмотреные уведомления приходили по второму разу": "Fixed an issue with notification repeat. Viewed notifications were arriving a second time",
+            "Исправлены жесты назад на Android": "Fixed back gestures on Android",
+            "Обновлена главная страница мессенджера": "Updated the main page of the messenger",
+            "Контекстное меню стало красивее и функциональнее": "The context menu has become more beautiful and functional",
+            "В настройки чатов добавлена функция повтора уведомлений": "Added notification repeat function to chat settings",
+            "В модалке профиля теперь можно одним нажатием копировать @username": "You can now copy @username with one click in the profile modal",
+            "Теперь текст можно выделять прямо внутри сообщения и удобно копировать": "Text can now be selected directly inside the message and conveniently copied",
+            "Добавлен баннер над чатами, с помощью которого можно пригласить друзей": "Added a banner above chats to invite friends",
+            "Строка поиска в списке чатов получила новый дизайн": "The search bar in the chat list received a new design",
+            "Добавлена информация о скриншотах в чатах и группах (только для десктопной версии мессенджера, в скором времени сделаем и для андроидов)": "Added information about screenshots in chats and groups (only for the desktop version of the messenger, coming soon for Android)",
+            "Обновлена шапка чата (три точки), теперь можно быстро открыть профиль, выключить уведомления, посмотреть статистику чата и удалить чат.": "Updated the chat header (three dots), now you can quickly open a profile, turn off notifications, view chat statistics, and delete the chat.",
+            "Перенесены пункты информации пересылки, запрета копирования и информации скриншотов в единую модалку приватности чата.": "Moved forward info, copy protection, and screenshot info items into a single chat privacy modal.",
+            "Обновлена модалка удаления чата (изменены иконка и кнопки)": "Updated the chat deletion modal (changed icon and buttons)",
+            "Переписана работа с базой данных (переход на Aggregation Pipeline)": "Rewrote database operations (transition to Aggregation Pipeline)",
+            "Удалены мини-игры и встроенный музыкальный плеер": "Removed mini-games and built-in music player",
+            "Исправлено отображение иконок": "Fixed icon display",
+            "Исправлена некликабельность кнопок регистрации/входа на планшетах": "Fixed unclickable registration/login buttons on tablets",
+            "Исправление утечки времени захода": "Fixed last seen time leak",
+            "Добавлена возможность перемещать закрепленные чаты": "Added the ability to move pinned chats",
+            "По клике на версию мессенджера в бургер меню открывается история обновлений": "Clicking on the messenger version in the burger menu opens the update history",
+            "Внесены правки в условия пользования и политику": "Made edits to the terms of use and policy",
+            "Проведена работа под капотом": "Under-the-hood improvements",
+            "Исправлено отображение никнеймов при пересылке сообщений": "Fixed nickname display when forwarding messages",
+            "Исправлен баг с перекрытием элементов в галерее": "Fixed a bug with overlapping elements in the gallery",
+            "Исправлены и другие мелкие ошибки, которые не будут учтены": "Fixed other minor errors that will not be listed",
+            "Изменена цветовая тема модалки профиля и галереи": "Changed the color theme of the profile modal and gallery",
+            "Добавлена возможность просматривать аватарки в профиле": "Added the ability to view avatars in the profile",
+            "Добавлены уведомления для архива (Чат перенесен в архив / Чат вынесен из архива)": "Added notifications for the archive (Chat moved to archive / Chat removed from archive)",
+            "Добавлена блокировка кнопок записи по приватности (красятся в серый, если собеседник запретил отправку голосовых/видеосообщений)": "Added blocking of recording buttons based on privacy (turn gray if the interlocutor forbade sending voice/video messages)",
+            "Закрыты известные лазейки в сообщениях": "Closed known loopholes in messages",
+            "Исправлен баг с тем, что можно было подсмотреть участников приватной группы, не являясь ее участником": "Fixed a bug where it was possible to peek at the members of a private group without being a member",
+            "Усилены лимиты на отправку системных запросов": "Strengthened limits on sending system requests",
+            "Исправлен баг с тем, что можно было подделать статус «печатает» от имени другого пользователя": "Fixed a bug where it was possible to forge the 'is typing' status on behalf of another user",
+            "Переписан алгоритм загрузки чатов, теперь он работает в десятки раз быстрее, даже если у вас сотни чатов": "Rewrote the chat loading algorithm, it now works tens of times faster, even if you have hundreds of chats",
+            "Кэш теперь обновляется корректно и при изменении ника он моментально обновляется в списке чатов": "The cache now updates correctly, and when changing a nickname, it instantly updates in the chat list",
+            "Голосовые и кружочки больше не начнут внезапно играть, если вы уже переключились на другой чат": "Voice and video messages will no longer suddenly start playing if you have already switched to another chat",
+            "При быстром скролле автопроигрыватель не потеряет позицию": "During fast scrolling, the autoplay will not lose its position",
+            "Минимализм в группах: убраны маленькие круглые аватары возле бабла сообщения в группах": "Minimalism in groups: removed small round avatars near the message bubble in groups",
+            "Корректное удаление сообщений: раньше если вы только отправили сообщение и пытались его удалить, сервер не успевал присвоить ему айди и сообщение удалялось со второго раза": "Correct message deletion: previously, if you just sent a message and tried to delete it, the server didn't have time to assign it an ID and the message was deleted on the second try",
+            "Исправили баг, когда при создании новой группы к ней могла случайно прикрепиться аватарка от предыдущей": "Fixed a bug where creating a new group could accidentally attach the avatar from the previous one"
+        };
+
+        document.querySelectorAll('.page-title, .page-subtitle, .type-badge, .section-title, .versioning-title, .version-item-desc').forEach(function(el){
+            var t = el.textContent.trim();
+            if (uiDict[t]) {
+                var icon = el.querySelector('i');
+                if (icon) {
+                    el.innerHTML = '';
+                    el.appendChild(icon);
+                    el.appendChild(document.createTextNode(' ' + uiDict[t]));
+                } else {
+                    el.textContent = uiDict[t];
+                }
+            }
+        });
+
+        document.querySelectorAll('.changes-list li').forEach(function(li){
+            var t = li.textContent.trim();
+            if (changesDict[t]) {
+                li.textContent = changesDict[t];
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

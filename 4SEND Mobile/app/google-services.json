@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "727304897644",
+    "project_id": "send-5313e",
+    "storage_bucket": "send-5313e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727304897644:android:7566bca92cd8cc0d164449",
+        "android_client_info": {
+          "package_name": "com.messenger.foursend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRIDCCIEwXKalgdA8hJfDLEyfnMREGluw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

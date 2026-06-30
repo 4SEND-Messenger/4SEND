@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>4SEND Messenger</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="keywords" content="4SEND, 4SEND WEB, 4send, messenger, мессенджер">
+<meta name="description" content="4SEND — бесплатный и безопасный мессенджер с шифрованием данных. Общайтесь в чатах, отправляйте файлы и будьте уверены в своей конфиденциальности.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://4send-messenger.hf.space/">
+<meta property="og:title" content="4SEND Messenger">
+<meta property="og:description" content="4SEND — бесплатный и безопасный мессенджер с шифрованием данных.">
+<meta property="og:image" content="/ico.png">
+<meta property="og:url" content="https://4send-messenger.hf.space/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="4SEND Messenger">
+<meta name="twitter:description" content="4SEND — бесплатный и безопасный мессенджер с шифрованием данных.">
+<meta name="twitter:image" content="/ico.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/ico.png">
+<link rel="apple-touch-icon" href="/ico.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="4SEND">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<script>
+    fetch('/api/firebase-config')
+        .then(res => res.json())
+        .then(config => {
+            if (config.apiKey) {
+                firebase.initializeApp(config);
+                window.firebaseVapidKey = config.vapidKey; 
+            }
+        })
+        .catch(err => console.error("Ошибка загрузки конфига Firebase:", err));
+</script>
+<script src=https://cdnjs.cloudflare.com integrity="sha512-E8QSvWZ0eCLGk4km6VnlNm8AJcB96LFuzQ1uyzlW6pS7lVbwgvWP1x2X7V1KybHB5rdfXVm7QXZSHvLqBa41gw==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href=https://fonts.googleapis.com rel=stylesheet>
+<style>:root{--accent:linear-gradient(135deg, #a74fff, #6a11cb);--bg:#0a0a0c;--sidebar:#121218;--sent:#2d1b4d;--rcv:#1e1e24;--border:#252530;--tg-blue:#50a2e9}*{box-sizing:border-box;margin:0;padding:0;font-family:Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body{background:var(--bg);color:#f0f0f0;height:100vh;width:100vw;overflow:hidden}#main-app{display:none;width:100%;height:100vh;flex-direction:row}#main-app.main-clear{display:flex!important}button,input,select,textarea{font-family:Montserrat,sans-serif}.contact-item b{font-family:Montserrat,sans-serif;font-weight:700!important;font-size:15px}#chat-name{font-weight:700;letter-spacing:-.5px}.message-text{font-weight:400;line-height:1.4}#sidebar{width:320px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column}.unread-badge{background:#a74fff;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;text-align:center;padding:0 4px;box-shadow:0 2px 5px rgba(0,0,0,.2);margin:0}#chat-window{flex:1;display:flex;flex-direction:column;background:var(--bg);position:relative}#msg-container{display:flex;flex-direction:column;gap:8px;padding:20px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:rgba(167,79,255,.3) transparent;scroll-behavior:auto!important;overflow-anchor:auto!important;scrollbar-gutter:stable}#msg-container::-webkit-scrollbar{width:5px}#msg-container::-webkit-scrollbar-track{background:0 0}#msg-container::-webkit-scrollbar-thumb{background:rgba(167,79,255,.3);border-radius:10px;transition:.3s}#msg-container::-webkit-scrollbar-thumb:hover{background:var(--accent)}#sidebar-context-menu .menu-item:hover{background:rgba(167,79,255,.1)}#contacts::-webkit-scrollbar{width:5px}#contacts::-webkit-scrollbar-track{background:0 0}#contacts::-webkit-scrollbar-thumb{background:rgba(167,79,255,.3);border-radius:10px;transition:.3s}#contacts::-webkit-scrollbar-thumb:hover{background:var(--accent)}#contacts{scrollbar-gutter:stable;overflow-y:auto}.tg-status-wrapper{display:inline-flex;position:relative;width:18px;height:12px;margin-left:5px;vertical-align:middle;color:rgba(255,255,255,.3)}.tg-tick{position:absolute;width:14px;height:14px;transition:all .3s ease}.tg-tick:last-child{left:5px}.tg-status-wrapper.read{color:#a74fff!important}.msg{max-width:75%;padding:10px 14px;border-radius:18px;position:relative;font-size:15px;animation:msgBounce .3s ease;transition:all .4s cubic-bezier(.4, 0, .2, 1);border:1px solid transparent;word-wrap:break-word}.sent{align-self:flex-end;background:var(--sent);border-color:#4a1d8a;border-bottom-right-radius:4px}.rcv{align-self:flex-start;background:var(--rcv);border-color:var(--border);border-bottom-left-radius:4px}.msg-exit-active{opacity:0!important;transform:translateX(150px) scale(.9)!important;filter:blur(4px)}.msg img{max-width:350px;max-height:400px;border-radius:12px;display:block;margin-top:5px;object-fit:contain}.msg.not-match{opacity:.1;filter:blur(2px);transform:scale(.98)}.search-highlight{background:rgba(167,79,255,.4);color:#e9d5ff;font-weight:700;padding:0 3px;border-radius:4px;box-shadow:0 0 10px #a74fff}#menu-drawer{position:fixed;left:-300px;top:0;width:280px;height:100%;background:#17171e;z-index:5000;transition:.3s;padding:20px;border-right:1px solid var(--border)}#menu-drawer.open{left:0}.drawer-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:4999;display:none;backdrop-filter:blur(4px)}.control-btn{background:0 0;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}.control-btn svg{width:26px;height:26px;fill:#a74fff}.control-btn:hover{transform:scale(1.1)}.forward-header{font-size:11px;font-weight:600;color:#a74fff;margin-bottom:4px;display:flex;align-items:center;gap:4px;opacity:.9}.forward-content{border-left:2px solid rgba(167,79,255,.4);padding-left:8px;margin-top:2px}.forward-container{border-left:2px solid #a74fff;padding-left:10px;margin:4px 0 2px 2px;display:flex;flex-direction:column;gap:2px}.forward-info{font-size:12px;font-weight:600;color:#a74fff;display:flex;align-items:center;gap:4px;margin-bottom:2px;opacity:.9}.msg{position:relative;min-width:80px;padding:8px 12px 16px 12px!important}.tg-status-wrapper{position:absolute;right:8px;bottom:4px;display:flex;align-items:center;gap:3px;pointer-events:none;z-index:10}@keyframes modalFadeIn{from{opacity:0}to{opacity:1}}@keyframes modalPop{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}@keyframes iosSlideIn{0%{transform:scale(.85) translateY(30px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}@keyframes iosSlideOut{0%{transform:scale(1) translateY(0);opacity:1}100%{transform:scale(.85) translateY(30px);opacity:0}}#user-profile-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0);z-index:10000;align-items:center;justify-content:center;transition:background .5s ease,backdrop-filter .5s ease,opacity .6s ease;pointer-events:none;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);opacity:0}#user-profile-modal.active{display:flex!important;background:rgba(0,0,0,.4);opacity:1;pointer-events:auto;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}#user-profile-modal.active>div{animation:iosSlideIn .5s cubic-bezier(.34,1.56,.64,1) forwards}#user-profile-modal.closing>div{animation:iosSlideOut .4s cubic-bezier(.4,0,.2,1) forwards}.contact-item{animation:chatItemIn .3s ease forwards;transition:background .2s ease,transform .2s ease;will-change:transform,opacity}.contact-item:active{transform:scale(.98);background:rgba(167,79,255,.2)!important}@keyframes accountSpringIn{0%{transform:scale(.85) translateY(30px);opacity:0}65%{transform:scale(1.03) translateY(-4px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}.account-modal-content{animation:accountSpringIn .5s cubic-bezier(.2,.9,.3,1.1) forwards;will-change:transform,opacity}.modal-backdrop-fade{animation:modalFadeIn .4s ease-out forwards}.voice-player{position:relative;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);padding:8px 50px 8px 16px;border-radius:22px;min-width:220px;user-select:none}.v-speed{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--accent);background:rgba(167,79,255,.1);padding:4px 8px;border-radius:10px;cursor:pointer;transition:all .2s}.v-play-btn{width:32px;height:32px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;transition:transform .2s}.v-play-btn:active{transform:scale(.9)}.v-play-btn svg{width:14px;height:14px;fill:white}.v-waves{display:flex;align-items:center;gap:2px;height:24px;flex:1}.v-bar{width:2px;background:rgba(167,79,255,.2);border-radius:1px;transition:background .1s}.v-bar.active{background:var(--accent)}.v-time{font-size:11px;color:#888;min-width:30px}@keyframes menuShow{0%{transform:scale(.5);opacity:0;filter:blur(5px)}70%{transform:scale(1.05);opacity:1;filter:blur(0px)}100%{transform:scale(1);opacity:1}}#modern-menu,#sidebar-context-menu{transform-origin:top left;animation:menuShow .2s cubic-bezier(.175,.885,.32,1.275) forwards;will-change:transform,opacity}#modern-menu{position:fixed;background:rgba(23,23,30,.95);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;z-index:6000;display:none;min-width:180px;box-shadow:0 10px 40px rgba(0,0,0,.7)}.menu-item{padding:10px 14px;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;transition:.2s;font-size:14px;color:#eee}.menu-item:hover{background:rgba(255,255,255,.1)}.menu-item svg{width:18px;height:18px;fill:#a74fff}@keyframes fadeInBg{from{background:rgba(0,0,0,0);backdrop-filter:blur(0px)}to{background:rgba(0,0,0,.8);backdrop-filter:blur(10px)}}@keyframes springIn{0%{transform:scale(.7) translateY(30px);opacity:0}60%{transform:scale(1.05) translateY(-5px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}.modal-anim-open{display:flex!important;animation:fadeInBg .3s ease forwards}.modal-content-spring{animation:springIn .5s cubic-bezier(.175,.885,.32,1.275) forwards}.audio-wrapper{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:8px 12px;border-radius:20px;min-width:200px}audio{height:30px;filter:invert(100%) hue-rotate(180deg) brightness(1.5);opacity:.8}@keyframes msgBounce{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}.av-letter{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;border-radius:50%}.saved-icon{background:var(--tg-blue);border-radius:50%;display:flex;align-items:center;justify-content:center;width:100%;height:100%}.saved-icon svg{width:60%;height:60%;fill:white}@media (max-width:768px){#sidebar{width:100%!important;position:absolute;left:0;top:0;height:100%;z-index:1000;transition:transform .3s cubic-bezier(.4, 0, .2, 1)}#chat-window{width:100%;position:absolute;left:0;top:0;height:100%;z-index:500}body.is-chat-active #sidebar{transform:translateX(-100%)}body.is-chat-active #mobile-back-btn{display:block!important}}.msg{-webkit-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}.msg-text{-webkit-user-select:text;user-select:text}#contacts div,.contact-item{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}@keyframes tickArrival{0%{opacity:0;transform:translateX(-5px) scale(.5)}100%{opacity:1;transform:translateX(0) scale(1)}}@keyframes menuShow{from{opacity:0;transform:scale(.95) translateY(-10px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes menuHide{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.98)}}.modern-menu{animation:menuShow .15s ease-out forwards;backdrop-filter:blur(25px) saturate(180%)!important;-webkit-backdrop-filter:blur(25px) saturate(180%)!important;background:rgba(28,28,35,.85)!important;box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)!important}.modern-menu.hide-anim{animation:menuHide .12s ease-in forwards;pointer-events:none}.menu-item{padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;border-radius:10px;font-size:14px;color:#eee;transition:background .2s,transform .1s}.menu-item:hover{background:rgba(255,255,255,.08)}.menu-item:active{background:rgba(255,255,255,.15);transform:scale(.97)}.icon-btn{background:0 0;border:none;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;transition:all .2s ease-in-out}.icon-btn:hover{transform:scale(1.15)}.icon-btn:hover svg{filter:drop-shadow(0 0 8px rgba(167, 79, 255, .4))}.t-opt:hover{background:rgba(167,79,255,.15);color:#a74fff!important}.t-opt{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;color:rgba(255,255,255,.8);font-size:13px;font-weight:500;border-radius:12px;transition:all .2s ease}.t-opt svg{width:18px;height:18px;fill:rgba(255,255,255,0.4);transition:all .2s ease}.t-opt:hover{background:rgba(167,79,255,.15);color:#a74fff}.t-opt:hover svg{fill:#a74fff;transform:scale(1.1)}@keyframes menuFadeIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}#bottom-bar,#search-btn-top{display:none!important}.chat-active #bottom-bar{display:flex!important}.chat-active #search-btn-top{display:block!important}.pin-modal-content{transform:scale(.7);opacity:0;transition:all .4s cubic-bezier(.34, 1.56, .64, 1)}#pin-modal.active .pin-modal-content{transform:scale(1);opacity:1}#pin-modal{opacity:0;transition:opacity .3s ease}#pin-modal.active{opacity:1}.message{user-select:none}.text-content{user-select:text}.forward-wrap{border-left:2px solid #a74fff;padding-left:10px;margin:4px 0;display:flex;flex-direction:column}.forward-label{font-size:11px;color:#a74fff;font-weight:700;margin-bottom:2px;text-transform:lowercase}.msg.favorite .status-icon{display:none!important}.lp-card{display:flex;margin-top:8px;background:rgba(255,255,255,.03);border-left:2px solid #a74fff;border-radius:4px 12px 12px 4px;overflow:hidden;cursor:pointer;transition:background .2s ease;max-width:450px}.lp-card:hover{background:rgba(167,79,255,.08)}.lp-image{width:100px;height:100%;min-height:80px;object-fit:cover;background:#111;flex-shrink:0}.lp-info{padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0}.lp-site{font-size:11px;color:#a74fff;font-weight:800;text-transform:uppercase;letter-spacing:.5px}.lp-title{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lp-desc{font-size:12px;color:#aaa;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}.confetti-piece{position:fixed;width:10px;height:10px;background-color:#a74fff;top:-20px;z-index:9999;pointer-events:none;animation:fall linear forwards}@keyframes fall{0%{transform:translateY(0) rotate(0) translateX(0);opacity:1}25%{transform:translateY(25vh) rotate(90deg) translateX(30px)}50%{transform:translateY(50vh) rotate(180deg) translateX(-30px)}75%{transform:translateY(75vh) rotate(270deg) translateX(30px)}100%{transform:translateY(110vh) rotate(720deg) translateX(0);opacity:0}}@keyframes tickFadeIn{from{opacity:0;transform:scale(.5) translateX(-5px)}to{opacity:1;transform:scale(1) translateX(0)}}.status-read{color:#a74fff!important}span[onclick="resetToHome()"]:active{transform:scale(.95);opacity:.8;transition:.1s;display:inline-block}@keyframes typingDots{0%{opacity:.2}20%{opacity:1}100%{opacity:.2}}.typing-dots span{animation:typingDots 1.4s infinite both;font-weight:700}.typing-dots span:nth-child(2){animation-delay:.2s}.typing-dots span:nth-child(3){animation-delay:.4s}.date-separator{display:flex;justify-content:center;align-items:center;margin:35px 0;position:sticky;top:15px;z-index:100;pointer-events:none}.date-bubble{background:rgba(30,30,40,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(167,79,255,.4);color:#fff;padding:8px 24px;border-radius:25px;font-size:13.5px;font-weight:600;letter-spacing:.5px;box-shadow:0 4px 25px rgba(0,0,0,.4),0 0 15px rgba(167,79,255,.15);user-select:none;text-transform:capitalize;animation:dateAppear .4s cubic-bezier(.18,.89,.32,1.28) forwards;pointer-events:auto}@keyframes dateAppear{from{opacity:0;transform:scale(.8) translateY(-10px)}to{opacity:1;transform:scale(1) translateY(0)}}#auth-screen{background-color:#0b0b0e!important;position:fixed!important;z-index:10000}.auth-pattern{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;overflow:hidden;pointer-events:none}.pattern-svg{position:absolute;fill:#ffffff;will-change:transform;pointer-events:none}#auth-screen::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:900px;background:radial-gradient(circle,rgba(167,79,255,.12) 0,transparent 70%);z-index:2;pointer-events:none}#auth-screen>:not(.auth-pattern){position:relative;z-index:10!important}#auth-screen{display:none;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;background:#0b0b0e}#auth-screen h1{background:var(--accent);-webkit-background-clip:text;color:transparent;font-size:52px;font-weight:900;margin-bottom:20px;animation:slideUp .8s cubic-bezier(.2,.8,.2,1) backwards}#p,#u{width:300px;padding:14px;margin:8px;background:rgba(26,26,36,.5)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)!important;color:#fff;border-radius:14px;outline:0;transition:all .3s cubic-bezier(.4, 0, .2, 1);animation:slideUp .8s cubic-bezier(.2,.8,.2,1) backwards}#u{animation-delay:.1s}#p{animation-delay:.2s}#p:focus,#u:focus{border-color:var(--accent)!important;background:rgba(26,26,36,.8)!important;box-shadow:0 0 20px rgba(167,79,255,.2);transform:translateY(-2px)}#auth-screen button{width:300px;padding:14px;margin-top:12px;background:var(--accent)!important;color:#fff!important;border:none;border-radius:14px;cursor:pointer;font-weight:700;outline:0;animation:slideUp .8s cubic-bezier(.2,.8,.2,1) .3s backwards;transition:transform .3s ease,box-shadow .3s ease,filter .3s ease}#auth-screen button:hover{transform:scale(1.03);box-shadow:0 0 25px rgba(167,79,255,.5);filter:brightness(1.1)}#auth-screen button:active,#auth-screen button:focus{background:var(--accent)!important;color:#fff!important;transform:scale(.97)}.auth-exit{animation:authExit .6s cubic-bezier(.4,0,.2,1) forwards!important;pointer-events:none}@keyframes authExit{from{opacity:1;transform:scale(1);filter:blur(0)}to{opacity:0;transform:scale(1.15);filter:blur(20px)}}.shake-anim{animation:shake .4s ease-in-out}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}@keyframes slideUp{from{opacity:0;transform:translateY(30px);filter:blur(10px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}.main-blur-init{filter:blur(20px);opacity:0;transition:filter .5s ease-out,opacity .5s ease-out;will-change:filter,opacity}.main-clear{display:flex!important;filter:blur(0);opacity:1!important}.unread-badge.muted-badge{background:#555!important;color:#aaa!important;box-shadow:none!important}.security-settings{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);margin-top:10px}.lock-timer-btns{display:flex;gap:5px;margin-top:8px}.timer-btn{flex:1;padding:5px;background:rgba(255,255,255,.05);border:1px solid rgba(167,79,255,.2);border-radius:6px;color:#ccc;font-size:11px;cursor:pointer;transition:.2s}.timer-btn.active{background:#a74fff;color:#fff;border-color:#a74fff}@keyframes springIn{0%{transform:scale(.7) translateY(40px);opacity:0}50%{transform:scale(1.05) translateY(-5px);opacity:1}70%{transform:scale(.98) translateY(2px)}100%{transform:scale(1) translateY(0)}}@keyframes iosSlideIn{0%{transform:scale(.85) translateY(30px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}@keyframes iosSlideOut{0%{transform:scale(1) translateY(0);opacity:1}100%{transform:scale(.85) translateY(30px);opacity:0}}#security-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0);z-index:11000;align-items:center;justify-content:center;transition:background .4s ease,backdrop-filter .4s ease;pointer-events:none;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px)}#security-modal.active{display:flex!important;background:rgba(0,0,0,.5);pointer-events:auto;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px)}#security-modal.active>div{animation:iosSlideIn .5s cubic-bezier(.34,1.56,.64,1) forwards}#security-modal.closing>div{animation:iosSlideOut .4s cubic-bezier(.4,0,.2,1) forwards}#security-modal .timer-option-btn{transition:all .3s cubic-bezier(.4, 0, .2, 1)}#security-modal .timer-option-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 5px 15px rgba(167,79,255,.2);filter:brightness(1.1)}#security-modal button[onclick="setupNewPin()"]{transition:all .3s ease}#security-modal button[onclick="setupNewPin()"]:hover{background:rgba(167,79,255,.1)!important;border-style:solid!important;transform:scale(1.01)}@keyframes smoothFadeIn{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}#pin-setup-modal>div{animation:smoothFadeIn .3s cubic-bezier(.4,0,.2,1) forwards}#pin-setup-modal button{transition:all .2s ease;flex:1}#pin-setup-modal button:hover{filter:brightness(1.1);transform:translateY(-2px)}#pin-setup-modal button:active{transform:translateY(0) scale(.98)}#scroll-down-wrapper{position:fixed!important;right:30px!important;bottom:100px!important;z-index:9999999!important;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;transition:.4s cubic-bezier(.18, .89, .32, 1.28)!important}#scroll-down-btn{width:50px!important;height:50px!important;border-radius:50%!important;background:#252530!important;border:1px solid rgba(167,79,255,.5)!important;color:#a74fff!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 8px 32px rgba(0,0,0,.9)!important;backdrop-filter:blur(15px)!important;cursor:pointer!important;pointer-events:auto!important;transition:transform .2s,background .2s!important}#scroll-down-btn:hover{transform:scale(1.1) translateY(-2px)!important;background:#2a2a38!important}#scroll-unread-badge{background:#ff4b4b!important;color:#fff!important;font-size:11px!important;font-weight:700!important;min-width:20px!important;height:20px!important;border-radius:10px!important;display:none;align-items:center;justify-content:center;padding:0 6px!important;margin-bottom:8px!important;box-shadow:0 4px 12px rgba(0,0,0,.6)!important;border:1px solid rgba(255,255,255,.1)!important}.msg-bubble{position:relative;padding-bottom:18px;min-width:60px}.msg-footer{position:absolute;bottom:4px;right:8px;display:flex;align-items:center;gap:4px}.msg-time{font-size:10px;color:rgba(255,255,255,.5);font-family:Inter,sans-serif}*{-webkit-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}[contenteditable=true],input,textarea{-webkit-user-select:text;user-select:text}.chat-content,.message-row,.msg,.msg-text{-webkit-user-select:none!important;-ms-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}#toast-notify{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:20000;min-width:200px;max-width:90%;padding:12px 20px;border-radius:20px;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center;pointer-events:none}#toast-text{color:#fff;font-size:14px;font-weight:600;letter-spacing:.3px}@keyframes toastIn{0%{transform:translateX(-50%) translateY(-40px) scale(.9);opacity:0}100%{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}@keyframes toastOut{0%{transform:translateX(-50%) translateY(0) scale(1);opacity:1}100%{transform:translateX(-50%) translateY(-20px) scale(.9);opacity:0}}@media (max-width:768px){#bottom-bar-container{padding:10px 12px!important;gap:8px!important}#messageText{padding:12px 45px 12px 15px!important}.control-btn svg{width:24px!important;height:24px!important}}#timer-menu{position:fixed;display:none;z-index:20000;width:200px;background:rgba(25,25,30,.85);backdrop-filter:blur(25px) saturate(180%);-webkit-backdrop-filter:blur(25px) saturate(180%);border-radius:20px;border:1px solid rgba(255,255,255,.1);box-shadow:0 15px 40px rgba(0,0,0,.6);padding:6px;flex-direction:column;animation:menuPopUp .3s cubic-bezier(.34,1.56,.64,1);transform-origin:bottom center}@keyframes menuPopUp{from{opacity:0;transform:scale(.8) translateY(15px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes menuPopDown{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.9) translateY(15px)}}.timer-closing{animation:menuPopDown .2s cubic-bezier(.4,0,.2,1) forwards!important;pointer-events:none}.t-opt{padding:12px 14px;display:flex;align-items:center;gap:12px;color:#eee;font-size:14px;font-weight:500;cursor:pointer;border-radius:14px;transition:background .2s}.t-opt:hover{background:rgba(167,79,255,.15)}.t-opt svg{width:18px;height:18px;fill:#a74fff}#custom-timer-val::-webkit-inner-spin-button,#custom-timer-val::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}#custom-timer-val{-moz-appearance:textfield}</style>
+<script>!function(){var t=localStorage.getItem("4send_token"),n=document.createElement("style");n.innerHTML=t?"#auth-screen { display: none !important; } #main-app { display: flex !important; opacity: 1 !important; visibility: visible !important; } body { background: #0f0f13; }":"#auth-screen { display: flex !important; } #main-app { display: none !important; }",document.head.appendChild(n)}()</script>
+</head>
+<link rel=icon type=image/png href=/ico.png>
+<body>
+<script>
+    if (!document.getElementById('global-loader') && localStorage.getItem('4send_token')) {
+        const loader = document.createElement('div');
+        loader.id = 'global-loader';
+        loader.innerHTML = `
+            <div style="position:relative; display:flex; flex-direction:column; align-items:center; z-index:2;">
+                <div style="position:relative; width:96px; height:96px; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
+                    <div style="position:absolute; inset:-4px; border-radius:50%; background:conic-gradient(from 0deg, transparent 0%, transparent 40%, #a74fff 80%, #d4aaff 100%); animation:loaderSpin 1.2s linear infinite; -webkit-mask-image:radial-gradient(transparent 58%, black 59%); mask-image:radial-gradient(transparent 58%, black 59%);"></div>
+                    <div style="position:relative; width:76px; height:76px; border-radius:22px; background:rgba(167,79,255,0.12); border:1px solid rgba(167,79,255,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(167,79,255,0.2); animation:loaderFloat 3s ease-in-out infinite;">
+                        <svg viewBox="0 0 24 24" style="width:38px; height:38px; fill:url(#loaderGrad); filter:drop-shadow(0 2px 8px rgba(167,79,255,0.5));">
+                            <defs>
+                                <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#d4aaff" />
+                                    <stop offset="100%" stop-color="#a74fff" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div style="font-weight:900; font-size:28px; letter-spacing:4px; background:linear-gradient(to right, #ffffff 20%, #d4aaff 50%, #ffffff 80%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:loaderShine 3s linear infinite; margin-bottom:10px; margin-right:-4px;">4SEND</div>
+                <div style="font-size:12px; font-weight:600; color:rgba(255,255,255,0.4); letter-spacing:2px; text-transform:uppercase; animation:loaderPulseText 1.5s ease-in-out infinite;" data-i18n="Загрузка...">Загрузка...</div>
+            </div>
+            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at center, rgba(167,79,255,0.1) 0%, transparent 60%); pointer-events:none;"></div>
+            <style>
+                @keyframes loaderSpin { 100% { transform: rotate(360deg); } }
+                @keyframes loaderFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+                @keyframes loaderShine { to { background-position: 200% center; } }
+                @keyframes loaderPulseText { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+            </style>
+        `;
+        Object.assign(loader.style, {
+            position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+            background: '#0a0a0c',
+            zIndex: '9999999', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            transition: 'opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s'
+        });
+        document.body.appendChild(loader);
+    }
+</script>
+</div>
+
+<div id=toast-notify style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,77,77,.9);backdrop-filter:blur(10px);color:#fff;padding:12px 25px;border-radius:15px;z-index:20000;box-shadow:0 10px 30px rgba(0,0,0,.5);font-weight:600;border:1px solid rgba(255,255,255,.2);animation:toastIn .3s ease forwards">
+<span id=toast-text data-i18n="Ошибка">Ошибка</span>
+</div>
+<style>@keyframes toastIn{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}@keyframes toastOut{from{transform:translateX(-50%) translateY(0);opacity:1}to{transform:translateX(-50%) translateY(-20px);opacity:0}}body,html{overscroll-behavior-x:none}.chat-container.active,.sidebar.active{touch-action:pan-y}</style>
+<style>
+#main-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    touch-action: none;
+}
+#main-action-btn.mic-mode {
+    background: transparent;
+    color: #888;
+}
+#main-action-btn.send-mode {
+    background: var(--accent);
+    color: #fff;
+}
+#icon-mic, #icon-send {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+}
+#main-action-btn.mic-mode #icon-mic {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+}
+#main-action-btn.mic-mode #icon-send {
+    transform: scale(0.5) rotate(-60deg);
+    opacity: 0;
+}
+#main-action-btn.send-mode #icon-mic {
+    transform: scale(0.5) rotate(60deg);
+    opacity: 0;
+}
+#main-action-btn.send-mode #icon-send {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+}
+#main-action-btn:active {
+    transform: scale(0.9) !important;
+}
+</style>
+<div id="delete-chat-confirm-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:16000;backdrop-filter:blur(10px);align-items:center;justify-content:center">
+    <div style="background:var(--sidebar);width:320px;padding:25px;border-radius:24px;border:1px solid var(--border);text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+        
+        <div style="width:64px;height:64px;background:rgba(255,77,77,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;border:2px solid rgba(255,77,77,0.3)">
+            <svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:#ff4d4d">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+        </div>
+
+        <h3 style="color:#fff;margin-bottom:8px;font-family:'Inter',sans-serif;font-size:19px;" data-i18n="Удаление чата">Удаление чата</h3>
+        <p id="del-chat-info" style="color:#888;font-size:14px;margin-bottom:22px;line-height:1.4;"></p>
+        
+        <div style="display:flex;gap:10px">
+            <button onclick="closeDeleteChatModal()" style="flex:1;padding:12px;background:#2a2a3a;color:#eee;border:none;border-radius:12px;cursor:pointer;font-weight:bold;transition:0.2s;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#2a2a3a'" data-i18n="ОТМЕНА">ОТМЕНА</button>
+            <button id="confirm-del-btn" style="flex:1;padding:12px;background:#ff4d4d;color:#fff;border:none;border-radius:12px;font-weight:bold;cursor:pointer;transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" data-i18n="УДАЛИТЬ">УДАЛИТЬ</button>
+        </div>
+    </div>
+</div>
+<div id="delete-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(30,27,36,0.95);z-index:15000;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease">
+    <div id="delete-modal-card" style="background:rgba(42,38,51,0.95);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);width:90%;max-width:380px;padding:32px 24px;border-radius:24px;border:1px solid rgba(255,59,48,0.3);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(255,59,48,0.2);transform:scale(0.9);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)">
+        <div style="width:80px;height:80px;background:rgba(255,59,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:2px solid rgba(255,59,48,0.3)">
+            <svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:#ff3b30">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
+        </div>
+        <h2 style="color:#fff;margin:0 0 12px 0;font-size:22px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" data-i18n="Удаление аккаунта">Удаление аккаунта</h2>
+        <p style="color:#8e8e93;font-size:14px;margin:0 0 24px 0;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" data-i18n="Это действие удалит все ваши сообщения и профиль навсегда. Восстановление будет невозможно.">Это действие удалит все ваши сообщения и профиль навсегда. Восстановление будет невозможно.</p>
+        
+        <div style="margin-bottom:16px">
+            <label style="display:block;color:#8e8e93;font-size:12px;font-weight:600;margin-bottom:8px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-transform:uppercase;letter-spacing:0.5px" data-i18n="Подтвердите действие">Подтвердите действие</label>
+            <input id="confirm-user-input" placeholder="Введите ваш логин" data-i18n-placeholder="Введите ваш логин" style="width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,59,48,0.3);border-radius:14px;color:#fff;outline:none;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;transition:all 0.2s ease;margin-bottom:12px" onfocus="this.style.borderColor='#ff3b30';this.style.background='rgba(255,59,48,0.1)'" onblur="this.style.borderColor='rgba(255,59,48,0.3)';this.style.background='rgba(255,255,255,0.05)'">
+        </div>
+        
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <button onclick="processAccountDeletion()" style="width:100%;padding:16px;background:linear-gradient(135deg,#ff3b30,#d32f2f);color:#fff;border:none;border-radius:14px;font-weight:600;cursor:pointer;transition:all 0.2s ease;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;box-shadow:0 4px 12px rgba(255,59,48,0.3)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(255,59,48,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(255,59,48,0.3)'" data-i18n="Удалить">Удалить</button>
+            <button onclick="closeDeleteMenu()" style="width:100%;padding:16px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:14px;color:#8e8e93;font-weight:600;cursor:pointer;transition:all 0.2s ease;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border:none" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#8e8e93'" data-i18n="Отмена">Отмена</button>
+        </div>
+    </div>
+</div>
+<div id=user-profile-modal style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:12000;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all .5s cubic-bezier(.4, 0, .2, 1)" onclick=closeProfile()>
+<div style="background:var(--sidebar);width:340px;padding:35px;border-radius:32px;border:1px solid var(--border);text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.6);transform:scale(.85) translateY(30px);opacity:0;transition:all .5s cubic-bezier(.34, 1.56, .64, 1)" onclick=event.stopPropagation()>
+<div id=p-view-av style="width:130px;height:130px;border-radius:50%;margin:0 auto 20px;background:#2a2a3a;border:3px solid #a74fff;overflow:hidden;display:flex;align-items:center;justify-content:center">
+</div>
+<h2 id=p-view-name style=margin-bottom:10px;color:#fff;font-size:24px;font-weight:800 data-i18n="Имя">Имя</h2>
+<p id=p-view-status style=color:#888;font-size:14px;margin-bottom:30px data-i18n="статус">статус</p>
+<button onclick=closeProfile() style="width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:18px;font-weight:800;cursor:pointer;font-size:14px;letter-spacing:.5px;margin-bottom:12px;transition:opacity .2s" data-i18n="ЗАКРЫТЬ">
+ЗАКРЫТЬ
+</button>
+<button id=block-btn onclick=toggleBlockUser() style="width:100%;padding:16px;background:0 0;color:#ff4d4d;border:1px solid #ff4d4d;border-radius:18px;font-weight:700;cursor:pointer;font-size:13px;letter-spacing:.5px;transition:.3s;display:none" data-i18n="Заблокировать">
+ЗАБЛОКИРОВАТЬ
+</button>
+</div>
+</div>
+<div id=forward-modal style=display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:11000;backdrop-filter:blur(10px);align-items:center;justify-content:center>
+<div style="background:var(--sidebar);width:350px;max-height:80vh;padding:25px;border-radius:24px;border:1px solid var(--border);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<h3 style=margin-bottom:15px;text-align:center;color:#fff data-i18n="Переслать в...">Переслать в...</h3>
+<input id=forwardSearch placeholder="Поиск контакта..." data-i18n-placeholder="Поиск контакта..." style="width:100%;padding:12px;background:#1a1a24;border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:15px;outline:0">
+<div id=forward-list style=overflow-y:auto;flex:1;margin-bottom:15px;scrollbar-width:none>
+</div>
+<button onclick=closeForward() style=width:100%;padding:14px;background:#333;color:#fff;border:none;border-radius:12px;cursor:pointer data-i18n="ОТМЕНА">ОТМЕНА</button>
+</div>
+</div>
+<div class=drawer-overlay id=overlay onclick=toggleMenu(!1)></div>
+<div id="auth-screen">
+    <div class="auth-pattern"></div>
+<div class="auth-card" style="position: relative;">
+    <div id="auth-lang-toggle" onclick="toggleAuthLang()" style="position:absolute; top:20px; right:20px; display:flex; align-items:center; gap:6px; cursor:pointer; color:#888; font-weight:bold; font-size:14px; transition:0.2s; z-index:100;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">
+        <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
+        <span id="auth-lang-text">EN</span>
+    </div>
+    <div class="auth-logo">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </div>
+    <h1>4SEND</h1>
+    
+    <div id="auth-toggle-btn" class="auth-tabs">
+        <div id="mode-login" class="auth-tab" onpointerdown="event.preventDefault(); switchAuthMode(true)" onclick="switchAuthMode(true)" data-i18n="Вход">Вход</div>
+        <div id="mode-register" class="auth-tab active" onpointerdown="event.preventDefault(); switchAuthMode(false)" onclick="switchAuthMode(false)" data-i18n="Регистрация">Регистрация</div>
+    </div>
+
+    <div class="input-group">
+        <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <input id="u" placeholder="Имя пользователя" data-i18n-placeholder="Имя пользователя" maxlength="20" autocomplete="off">
+    </div>
+    
+    <div class="input-group">
+        <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+        <input id="p" type="password" placeholder="Пароль" data-i18n-placeholder="Пароль" maxlength="30">
+    </div>
+
+    <div id="terms-container" class="terms-box" style="display:block;">
+        <label class="terms-label">
+            <input type="checkbox" id="terms-checkbox-1">
+            <span class="checkmark"></span>
+            <div style="flex:1; line-height:1.4;"><span data-i18n="Я согласен с">Я согласен с</span> <a href="/terms.html" target="_blank" data-i18n="условиями пользования мессенджера">условиями пользования мессенджера</a></div>
+        </label>
+        <label class="terms-label">
+            <input type="checkbox" id="terms-checkbox-2">
+            <span class="checkmark"></span>
+            <div style="flex:1; line-height:1.4;"><span data-i18n="Я согласен с">Я согласен с</span> <a href="/privacy.html" target="_blank" data-i18n="политикой конфиденциальности мессенджера">политикой конфиденциальности мессенджера</a></div>
+        </label>
+    </div>
+
+    <button id="auth-submit-btn" onclick="auth()" data-i18n="ЗАРЕГИСТРИРОВАТЬСЯ">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+    <div id="lErr" class="auth-error"></div>
+</div>
+    <style>
+        #auth-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0c; z-index: 10000; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(26, 26, 36, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; padding: 40px 30px; width: 90%; max-width: 380px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); z-index: 10; animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box; }
+        .auth-logo { width: 64px; height: 64px; background: linear-gradient(135deg, #a74fff, #6a11cb); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(167,79,255,0.4); }
+        .auth-logo svg { width: 32px; height: 32px; fill: #fff; }
+        .auth-card h1 { margin: 0 0 30px 0; font-size: 28px; font-weight: 900; letter-spacing: 2px; background: linear-gradient(to right, #fff, #d4aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-tabs { display: flex; width: 100%; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 4px; margin-bottom: 25px; box-sizing: border-box; }
+        .auth-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 700; color: #888; cursor: pointer; border-radius: 12px; transition: 0.3s; }
+        .auth-tab.active { background: rgba(167,79,255,0.15); color: #a74fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .input-group { position: relative; width: 100%; margin-bottom: 16px; }
+        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: #666; transition: 0.3s; pointer-events: none; }
+        .input-group input { width: 100%; padding: 16px 16px 16px 50px; background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.05); border-radius: 18px; color: #fff; outline: none; transition: 0.3s; font-size: 15px; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        .input-group input:focus { border-color: #a74fff; background: rgba(167,79,255,0.05); box-shadow: 0 0 20px rgba(167,79,255,0.15); }
+        .input-group input:focus ~ .input-icon { fill: #a74fff; }
+        #auth-submit-btn { width: 100%; padding: 18px; margin-top: 10px; background: linear-gradient(135deg, #a74fff, #6a11cb); border: none; border-radius: 18px; color: #fff; font-weight: 800; font-size: 15px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px rgba(167,79,255,0.3); }
+        #auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(167,79,255,0.5); }
+        #auth-submit-btn:active { transform: translateY(1px); }
+        .auth-error { color: #ff4d4d; font-size: 13px; font-weight: 600; margin-top: 15px; text-align: center; min-height: 18px; }
+        .terms-box { width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; padding-left: 2px; box-sizing: border-box; }
+        .terms-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; color: #aaa; text-align: left; line-height: 1.4; }
+        .terms-label input { display: none; }
+        .checkmark { width: 20px; height: 20px; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+        .terms-label input:checked ~ .checkmark { background: #a74fff; border-color: #a74fff; }
+        .terms-label input:checked ~ .checkmark::after { content: ''; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+        .terms-label a { color: #a74fff; text-decoration: none; font-weight: 600; }
+        ::selection { background: #a74fff; color: #fff; }
+        #u, #p { 
+            width: 100% !important; 
+            margin: 0 !important; 
+            box-sizing: border-box !important; 
+            padding-left: 45px !important; 
+        }
+        @media (max-width: 400px) {
+            .auth-card {
+                padding: 30px 20px !important;
+                width: 95% !important;
+            }
+        }
+    </style>
+</div>
+<div id="menu-drawer">
+<div style="text-align:center;margin-bottom:30px">
+<div id="drawer-av-box" style="width:90px;height:90px;border-radius:50%;background:#2a2a3a;margin:0 auto 15px;border:2px solid #a74fff;overflow:hidden;display:flex;align-items:center;justify-content:center"></div>
+<h3 id="drawer-name" style="margin:0;display:flex;align-items:center;justify-content:center;gap:4px">Юзер</h3>
+<small style="color:#4caf50" data-i18n="в сети">в сети</small>
+</div>
+<div class="menu-item" onclick="openSavedMessages()">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+</svg>
+<span data-i18n="Избранное">Избранное</span>
+</div>
+<div class="menu-item" onclick="toggleArchiveView()">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+</svg>
+<span id="archive-menu-text" data-i18n="Архив чатов">Архив чатов</span>
+</div>
+<div class="menu-item" onclick="openSecurityModal()">
+<svg viewBox="0 0 24 24" style="width:18px;fill:#a74fff">
+<path d="M17 10H16V7C16 4.79 14.21 3 12 3C9.79 3 8 4.79 8 7V10H7C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10ZM10 7C10 5.9 10.9 5 12 5C13.1 5 14 5.9 14 7V10H10V7ZM12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17Z"></path>
+</svg>
+<span data-i18n="Конфиденциальность">Конфиденциальность</span>
+</div>
+<div class="menu-item" onclick="openChatSettingsModal()">
+<svg viewBox="0 0 24 24" style="width:18px;fill:#a74fff">
+<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+</svg>
+<span data-i18n="Настройки чатов">Настройки чатов</span>
+</div>
+<div class="menu-item" onclick="logout()" style="color:#ff4d4d">
+<svg viewBox="0 0 24 24" style="width:18px;fill:#ff4d4d"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
+<span data-i18n="Выйти из аккаунта">Выйти из аккаунта</span>
+</div>
+<div style="position:absolute;bottom:25px;left:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;user-select:none;pointer-events:none">
+    <div style="display:flex;gap:12px;opacity:.3;font-size:10px;white-space:nowrap;pointer-events:auto">
+        <a href="terms.html" target="_blank" style="color:#eee;text-decoration:none;transition:.2s" onmouseover='this.style.opacity="1",this.style.color="#a74fff"' onmouseout='this.style.opacity="0.3",this.style.color="#eee"' data-i18n="Наши условия">Наши условия</a>
+        <span style="color:#444">•</span>
+        <a href="privacy.html" target="_blank" style="color:#eee;text-decoration:none;transition:.2s" onmouseover='this.style.opacity="1",this.style.color="#a74fff"' onmouseout='this.style.opacity="0.3",this.style.color="#eee"' data-i18n="Наша политика">Наша политика</a>
+    </div>
+    <div style="text-align:center;opacity:.5;transition:0.2s;pointer-events:auto;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.5'">
+        <div onclick="selectChat('4send_help'); toggleMenu(false);" style="cursor:pointer;font-weight:900;font-size:26px;background:var(--accent);-webkit-background-clip:text;color:transparent;letter-spacing:1.5px;text-transform:uppercase;filter:drop-shadow(0 0 10px rgba(167, 79, 255, .3))">4SEND</div>
+        <div onclick="window.open('changelog.html', '_blank'); toggleMenu(false);" style="cursor:pointer;font-size:12px;color:#888;font-weight:600;margin-top:2px;display:inline-block;padding:2px 6px;border-radius:4px;transition:0.2s" onmouseover="this.style.color='#a74fff'" onmouseout="this.style.color='#888'" data-i18n="Версия 1.0.1">Версия 1.0.1</div>
+    </div>
+</div>
+</div>
+<div id=main-app class=main-blur-init>
+<div id=sidebar>
+<div style=padding:20px;display:flex;align-items:center;justify-content:space-between>
+<div style=display:flex;align-items:center;gap:15px>
+<button class=control-btn onclick=toggleMenu(!0)>
+<svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+</button>
+<span onclick=resetToHome() style=font-weight:900;background:var(--accent);-webkit-background-clip:text;color:transparent;font-size:22px;cursor:pointer;user-select:none>4SEND</span>
+</div>
+<button class=control-btn onclick=openCreateRoomModal() title="Создать группу/канал" data-i18n-title="Создать группу/канал">
+<svg viewBox="0 0 24 24"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+</button>
+</div>
+<div style="position:relative; margin:0 15px 15px;">
+    <div id="search-placeholder-ui" style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); display:flex; align-items:center; gap:6px; color:#888; pointer-events:none; transition:all 0.2s ease;">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span style="font-size:15px;font-weight:500;" data-i18n="Поиск">Поиск</span>
+    </div>
+    <input id="searchInput" style="width:100%; padding:12px 15px 12px 40px; background:#1a1a24; border:1px solid #252530; border-radius:20px; color:#fff; outline:0; box-sizing:border-box; transition:0.2s;" onfocus="document.getElementById('search-placeholder-ui').style.left='15px'; document.getElementById('search-placeholder-ui').style.transform='translate(0, -50%)'; document.getElementById('search-placeholder-ui').querySelector('span').style.opacity='0';" onblur="if(!this.value){document.getElementById('search-placeholder-ui').style.left='50%'; document.getElementById('search-placeholder-ui').style.transform='translate(-50%, -50%)'; document.getElementById('search-placeholder-ui').querySelector('span').style.opacity='1';}">
+</div>
+<div id=contacts style=overflow-y:auto;flex:1></div>
+</div>
+<div id=chat-window>
+<div id=chat-header style="background:var(--sidebar);padding:15px 25px;border-bottom:1px solid #252530;display:flex;align-items:center;justify-content:space-between">
+<div style=display:flex;align-items:center;gap:12px;flex:1>
+<button id=mobile-back-btn onclick=closeChatMobile() style="display:none;background:0 0;border:none;cursor:pointer;padding:0;margin-right:5px">
+<svg viewBox="0 0 24 24" style=width:28px;height:28px;fill:#a74fff><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+</button>
+<div id=header-info-block onclick=showUserProfile(target) style=display:flex;align-items:center;gap:12px;cursor:pointer;flex:1>
+<div id=header-avatar-box style=width:42px;height:42px;border-radius:50%;overflow:hidden;display:none></div>
+<div>
+<div id=chat-name style=font-weight:700 data-i18n="Выберите чат">Выберите чат</div>
+<small id=chat-status></small>
+</div>
+</div>
+</div>
+<button onclick=event.stopPropagation(),toggleInternalSearch() class=control-btn>
+<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" )/>></svg>
+</button>
+</div>
+<div id=pinned-message-bar style="display:none;align-items:center;gap:15px;padding:10px 20px;background:rgba(18,18,26,.95);border-bottom:1px solid rgba(167,79,255,.3);backdrop-filter:blur(15px);position:sticky;top:0;z-index:1000;width:100%;box-sizing:border-box;cursor:pointer" onclick=handlePinnedClick()>
+<div style=width:3px;height:32px;background:#a74fff;border-radius:4px;flex-shrink:0></div>
+<div style=flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px>
+<div id=pinned-counter style=font-size:11px;color:#a74fff;font-weight:800;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap data-i18n="Закреплённое сообщение">
+Закреплённое сообщение
+</div>
+<div id=pinned-text-content style=font-size:13px;color:#eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.8 data-i18n="Текст сообщения...">Текст сообщения...</div>
+</div>
+<button onclick=event.stopPropagation(),unpinMessage() style="background:0 0;border:none;color:#555;cursor:pointer;font-size:18px;padding:5px;flex-shrink:0">✕</button>
+</div>
+<div id=chat-search-bar style="display:none;padding:10px 25px;background:var(--sidebar);border-bottom:1px solid var(--border)">
+<input id=internalSearchInput placeholder="Поиск в чате..." data-i18n-placeholder="Поиск в чате..." style="width:100%;background:0 0;border:none;color:#fff;outline:0">
+</div>
+<div id=msg-container></div>
+<div id=reply-preview-bar style="display:none;align-items:center;gap:10px;padding:10px 25px;background:#121218;border-top:1px solid #252530;border-left:4px solid #a74fff">
+<div id=reply-preview-text style=flex:1;font-size:13px;color:#888></div>
+<button onclick=cancelReply() style="background:0 0;border:none;color:#ff4d4d;cursor:pointer">✕</button>
+</div>
+<div id="bottom-bar-container" style="padding:8px 12px; display:flex; align-items:flex-end; gap:8px; background:#121218; position:relative; border-top:1px solid #252530;">
+    <input type="file" id="f-input" hidden onchange="upFile()">
+    
+    <div style="flex:1; display:flex; align-items:flex-end; background:#1a1a24; border:1px solid #252530; border-radius:22px; padding:2px 4px; position:relative; transition: border-color 0.3s;">
+        <button onclick='document.getElementById("f-input").click()' style="padding:8px 10px; color:#888; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:2px; transition: all 0.2s;" onmouseover="this.style.color='#a74fff'; this.style.transform='scale(1.1)'" onmouseout="this.style.color='#888'; this.style.transform='scale(1)'">
+            <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor; transform: rotate(45deg);"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4s-4 1.79-4 4v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/></svg>
+        </button>
+        
+        <div style="flex:1; position:relative; display:flex; align-items:center;">
+            <textarea id="messageText" placeholder="Написать..." data-i18n-placeholder="Написать..." oninput='updateCounter(this); this.style.height="auto"; this.style.height=this.scrollHeight+"px"; this.style.overflowY=this.scrollHeight>150?"auto":"hidden"; toggleActionBtn(this);' rows="1" style="width:100%; padding:10px 8px 10px 4px; background:transparent; border:none; color:#fff; outline:0; resize:none; overflow-y:hidden; min-height:40px; max-height:150px; box-sizing:border-box; line-height:20px; font-size:var(--msg-text-size, 15px); font-family:inherit; word-break:break-word; display:block;"></textarea>
+            <div id="char-counter" style="position:absolute; right:8px; top:50%; transform:translateY(-50%) scale(.8); background:rgba(167,79,255,.2); color:#a74fff; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:600; border:1px solid rgba(167,79,255,.3); backdrop-filter:blur(10px); opacity:0; transition:all .3s ease; pointer-events:none; z-index:5;">0/1000</div>
+        </div>
+
+        <button id="scheduled-messages-btn" onclick="showScheduledMessages()" style="display:none; padding:8px 10px; color:#a74fff; background:transparent; border:none; cursor:pointer; align-items:center; justify-content:center; margin-bottom:2px; transition: all 0.2s; position:relative;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:currentColor;"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+            <span id="scheduled-count" style="position:absolute; top:2px; right:2px; background:#ff4d4d; color:#fff; font-size:10px; border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid #1a1a24;">1</span>
+        </button>
+
+        <button id="ai-rewrite-btn" onclick="openAiRewriteModal()" style="display:none; padding:8px 10px; color:#888; background:transparent; border:none; cursor:pointer; align-items:center; justify-content:center; margin-bottom:2px; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); opacity:0; transform:scale(0.5);" onmouseover="this.style.color='#a74fff'; this.style.transform='scale(1.1)'" onmouseout="this.style.color='#888'; this.style.transform='scale(1)'">
+            <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; font-weight:800; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; color:currentColor; line-height:1;"><span style="font-size:16px;">A</span><span style="font-size:11px; opacity:0.6; margin-left:4px;">i</span></span>
+        </button>
+
+        <button id="emoji-toggle-btn" onclick="toggleEmojiPanel(event)" style="padding:8px 10px; color:#888; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:2px; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor; transition: 0.2s;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+        </button>
+    </div>
+
+    <div style="position:relative; display:flex; align-items:flex-end; margin-bottom:2px;">
+        <button id="main-action-btn" class="mic-mode">
+            <div id="icon-mic">
+                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor;"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            </div>
+            <div id="icon-send">
+                <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; transform:translateX(2px);"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </div>
+        </button>
+
+        <div id="send-options-menu" style="display:none; position:fixed; z-index:20000; width:max-content; min-width:220px; max-width:90vw; background:rgba(25,25,30,.85); backdrop-filter:blur(25px) saturate(180%); border-radius:20px; border:1px solid rgba(255,255,255,.1); box-shadow:0 15px 40px rgba(0,0,0,.6); padding:6px; flex-direction:column; transform-origin:bottom right; animation: menuPopUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div class="t-opt" onclick="openTimerMenuFromOptions(event)">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                <span data-i18n="Исчезающее сообщение">Исчезающее сообщение</span>
+            </div>
+            <div class="t-opt" onclick="openScheduleMenuFromOptions(event)">
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                <span data-i18n="Запланировать сообщение">Запланировать сообщение</span>
+            </div>
+        </div>
+        
+        <div id="timer-menu" style="display:none; position:fixed; z-index:20000; width:max-content; min-width:200px; max-width:90vw; background:rgba(25,25,30,.85); backdrop-filter:blur(25px) saturate(180%); border-radius:20px; border:1px solid rgba(255,255,255,.1); box-shadow:0 15px 40px rgba(0,0,0,.6); padding:6px; flex-direction:column; transform-origin:bottom right; animation: menuPopUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div class="t-opt" onclick='setTimer(0,"Выкл")'><svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg><span data-i18n="Выключить">Выключить</span></div>
+            <div class="t-opt" onclick='setTimer(1,"1 мин")'><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span data-i18n="1 минута">1 минута</span></div>
+            <div class="t-opt" onclick='setTimer(60,"1 час")'><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.2 3.1.8-1.2-4.5-2.7V7z"/></svg><span data-i18n="1 час">1 час</span></div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin:4px 8px"></div>
+            <div style="padding:8px;display:flex;gap:6px;align-items:center">
+                <input type="number" id="custom-timer-val" placeholder="мин" data-i18n-placeholder="мин" style="flex:1;min-width:0;background:rgba(0,0,0,.2);border:1px solid rgba(167,79,255,.3);border-radius:10px;color:#fff;padding:8px 6px;text-align:center;font-size:14px;outline:0;box-sizing:border-box">
+                <button onclick="setCustomTimer()" style="flex-shrink:0;background:#a74fff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;transition:.2s">OK</button>
+            </div>
+        </div>
+
+        <div id="schedule-menu" style="display:none; position:fixed; z-index:20000; width:max-content; min-width:200px; max-width:90vw; background:rgba(25,25,30,.85); backdrop-filter:blur(25px) saturate(180%); border-radius:20px; border:1px solid rgba(255,255,255,.1); box-shadow:0 15px 40px rgba(0,0,0,.6); padding:6px; flex-direction:column; transform-origin:bottom right; animation: menuPopUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div style="padding:8px; color:#aaa; font-size:12px; text-align:center; font-weight:bold;" data-i18n="Отправить через:">Отправить через:</div>
+            <div class="t-opt" onclick='setSchedule(10, "10 мин")' data-i18n="10 минут">10 минут</div>
+            <div class="t-opt" onclick='setSchedule(30, "30 мин")' data-i18n="30 минут">30 минут</div>
+            <div class="t-opt" onclick='setSchedule(60, "1 час")' data-i18n="1 час">1 час</div>
+            <div class="t-opt" onclick='setSchedule(120, "2 часа")' data-i18n="2 часа">2 часа</div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin:4px 8px"></div>
+            <div style="padding:8px; display:flex; flex-direction:column; gap:6px;">
+                <div style="color:#aaa; font-size:11px; font-weight:bold;" data-i18n="Своя дата и время:">Своя дата и время:</div>
+                <input type="datetime-local" id="custom-schedule-time" style="background:rgba(0,0,0,.2);border:1px solid rgba(167,79,255,.3);border-radius:10px;color:#fff;padding:8px;font-size:13px;outline:0;width:100%;box-sizing:border-box; color-scheme: dark;">
+                <button onclick="setCustomSchedule()" style="background:#a74fff;color:#fff;border:none;border-radius:10px;padding:8px;font-weight:700;cursor:pointer;transition:.2s" data-i18n="УСТАНОВИТЬ">УСТАНОВИТЬ</button>
+            </div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin:4px 8px"></div>
+            <div class="t-opt" onclick='setSchedule(0, "Отмена")' style="color:#ff4d4d;" data-i18n="Отменить">Отменить</div>
+        </div>
+    </div>
+</div>
+<div id=drop-zone style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(167,79,255,.15);backdrop-filter:blur(8px);z-index:9999;border:3px dashed #a74fff;align-items:center;justify-content:center;pointer-events:none;transition:.3s">
+<div style="text-align:center;color:#fff;background:#13131b;padding:30px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.5)">
+<div style=font-size:50px;margin-bottom:10px>📂</div>
+<div style=font-weight:700;font-size:18px data-i18n="Отпустите, чтобы отправить">Отпустите, чтобы отправить</div>
+<div style=font-size:12px;color:#888;margin-top:5px data-i18n="Картинки, музыка или документы">Картинки, музыка или документы</div>
+</div>
+</div>
+<div id=pin-modal style=display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:20000;align-items:center;justify-content:center;backdrop-filter:blur(5px)>
+<div style="background:#1a1a24;padding:25px;border-radius:20px;width:300px;border:1px solid #252530;text-align:center">
+<div style=color:#fff;font-weight:700;margin-bottom:20px data-i18n="Закрепить сообщение?">Закрепить сообщение?</div>
+<button onclick='confirmPin("both")' style=width:100%;padding:12px;margin-bottom:10px;border-radius:12px;border:none;background:#a74fff;color:#fff;cursor:pointer;font-weight:600 data-i18n="Закрепить для всех">Закрепить для всех</button>
+<button onclick='confirmPin("me")' style="width:100%;padding:12px;margin-bottom:15px;border-radius:12px;border:1px solid #333;background:0 0;color:#aaa;cursor:pointer" data-i18n="Только для меня">Только для меня</button>
+<div onclick=closePinModal() style=color:#555;cursor:pointer;font-size:13px data-i18n="Отмена">Отмена</div>
+</div>
+</div>
+<script src=/socket.io/socket.io.js></script>
+<script src="languages.js"></script>
+<script src=script.js></script>
+<div id=settings-modal style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:10000;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);align-items:center;justify-content:center;opacity:0;transition:all .5s cubic-bezier(.4, 0, .2, 1);pointer-events:none">
+<div id=settings-content style="background:#1c1c23;width:340px;padding:35px;border-radius:32px;border:1px solid rgba(255,255,255,.1);text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.6);font-family:sans-serif;transform:scale(.8) translateY(20px);opacity:0;transition:all .5s cubic-bezier(.34, 1.56, .64, 1)">
+<h2 style=margin-bottom:25px;background:linear-gradient(90deg,#a74fff,#8a2be2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:24px;font-weight:800 data-i18n="ПРОФИЛЬ">ПРОФИЛЬ</h2>
+<div id=p-av-preview onclick='document.getElementById("p-av-input").click()' style="width:120px;height:120px;border-radius:50%;margin:0 auto 12px;background:#2a2a3a;border:3px solid #a74fff;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .2s ease">
+</div>
+<small style=display:block;margin-bottom:25px;color:#aaa;font-size:12px;letter-spacing:.3px data-i18n="Нажмите на круг, чтобы сменить фото">Нажмите на круг, чтобы сменить фото</small>
+<input type=file id=p-av-input hidden accept=image/* onchange=uploadNewAvatar(this)>
+<input id=p-new-name placeholder="Ваш новый ник" data-i18n-placeholder="Ваш новый ник" style="width:100%;padding:16px;background:#14141b;border:1px solid rgba(255,255,255,.1);border-radius:18px;color:#fff;margin-bottom:25px;outline:0;text-align:center;font-size:15px;box-sizing:border-box">
+<div style=display:flex;gap:12px>
+<button onclick=saveProfile() style=flex:1.5;padding:16px;background:#a74fff;color:#fff;border:none;border-radius:18px;font-weight:700;cursor:pointer;font-size:14px;letter-spacing:.5px;transition:.2s onmouseover='this.style.opacity="0.8"' onmouseout='this.style.opacity="1"' data-i18n="СОХРАНИТЬ">СОХРАНИТЬ</button>
+<button onclick=closeSettings() style=flex:1;padding:16px;background:#2a2a3a;color:#eee;border:none;border-radius:18px;cursor:pointer;font-size:14px;transition:.2s onmouseover='this.style.background="#3a3a4a"' onmouseout='this.style.background="#2a2a3a"' data-i18n="ОТМЕНА">ОТМЕНА</button>
+</div>
+</div>
+<div id=scroll-down-wrapper style=display:none;position:fixed;right:25px;bottom:95px;z-index:99999;flex-direction:column;align-items:center;transition:.4s;opacity:0;pointer-events:none>
+<div id=scroll-unread-badge style="display:none;background:#ff4b4b;color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;align-items:center;justify-content:center;padding:0 6px;margin-bottom:5px;box-shadow:0 2px 8px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1)">0</div>
+<button id=scroll-down-btn onclick=scrollToBottom(!0) style="width:50px;height:50px;border-radius:50%;background:#252530;border:1px solid rgba(167,79,255,.4);color:#a74fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(0,0,0,.7);backdrop-filter:blur(15px);transition:.2s;pointer-events:auto" onmouseover='this.style.transform="scale(1.1)"' onmouseout='this.style.transform="scale(1)"'>
+<svg viewBox="0 0 24 24" style=width:28px;height:28px;fill:currentColor><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+</button>
+</div>
+</div>
+</body>
+</html>

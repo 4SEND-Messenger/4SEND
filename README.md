@@ -19,7 +19,7 @@ Every "secure" messenger asks for your phone number. But a phone number is your 
 ### Features
 
 - Anonymous registration - username and password only
-- End-to-end encryption - server stores encrypted blobs, keys never leave the client
+- Symmetric encryption - messages are encrypted in transit and at rest
 - No IP logging, no connection logs
 - Auto-delete messages with a timer
 - EXIF metadata stripped from all uploaded images
@@ -107,7 +107,7 @@ ISC
 
 Available at `/privacy.html` - 50 points covering data collection, encryption architecture, zero-knowledge design, and legal requests.
 
-Key points: no IP storage, no connection logs, no contact sync, physical file deletion on message delete, Zero-Knowledge architecture (we cannot reset your password because we do not hold your keys).
+Key points: no IP storage, no connection logs, no contact sync, physical file deletion on message delete.
 
 ---
 
@@ -122,7 +122,7 @@ Key points: no IP storage, no connection logs, no contact sync, physical file de
 ### Возможности
 
 - Анонимная регистрация - только логин и пароль
-- Сквозное шифрование - сервер хранит зашифрованные блобы, ключи никогда не покидают клиент
+- Симметричное шифрование - сообщения шифруются при передаче и хранении
 - Нет логов IP-адресов, нет логов подключений
 - Автоудаление сообщений по таймеру
 - Автоматическая очистка EXIF-метаданных из загружаемых изображений
@@ -210,4 +210,4 @@ ISC
 
 Доступна по адресу `/privacy.html` - 50 пунктов: сбор данных, архитектура шифрования, zero-knowledge дизайн, правовые запросы.
 
-Ключевое: нет хранения IP, нет логов подключений, нет синхронизации контактов, физическое удаление файлов при удалении сообщения, Zero-Knowledge архитектура (мы не можем сбросить ваш пароль, потому что не владеем вашими ключами).
+Ключевое: нет хранения IP, нет логов подключений, нет синхронизации контактов, физическое удаление файлов при удалении сообщения.

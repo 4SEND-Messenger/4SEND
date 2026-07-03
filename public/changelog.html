@@ -336,6 +336,79 @@
             <div class="card-header">
                 <div class="version-badge">
                     <i class="fas fa-code-branch"></i>
+                    1.0.3
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Производительность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлен throttle для lastActive: запись в БД теперь не чаще раза в 5 минут вместо каждого запроса</li>
+                <li>Заменены 4 .save() на updateOne: pushToken, panicPassword, 2FA setup, 2FA disable</li>
+            </ul>
+                </div>   
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
+                    1.0.2
+                </div>
+                <div class="type-badge">
+                    <i class="fas fa-bug"></i>
+                    Багфикс
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="fas fa-shield-halved"></i>
+                Безопасность
+            </div>
+            <ul class="changes-list">
+                <li>Исправлена утечка данных приватности: при синхронизации теперь передаются только свои настройки, а не всех пользователей</li>
+                <li>Добавлена фильтрация прототипных ключей (__proto__, constructor, prototype) при очистке входных данных (NoSQL-инъекции)</li>
+                <li>Ограничена роль пользователя строгим enum на уровне схемы (user, admin, banned)</li>
+                <li>Добавлена fail-fast валидация JWT_SECRET и ENCRYPTION_KEY при старте сервера</li>
+                <li>Скрыты чувствительные поля (token, ip, password, panicPassword, twoFactorPassword, sessions, pushToken) в admin и sessions endpoints</li>
+                <li>Добавлен authenticateToken на эндпоинты reactions, /users</li>
+                <li>Добавлена проверка членства в комнате перед mark_read</li>
+                <li>Добавлена проверка существования получателя перед отправкой direct message</li>
+                <li>Удалён joinRequests из ответа при получении информации о комнате</li>
+                <li>Удалены err.message из пользовательских ошибок (AI, общие)</li>
+                <li>Добавлена валидация и нормализация полей на уровне схем: publicLink (lowercase/trim/match), maxlength для name, description, fileName, reply_to, tempId</li>
+                <li>Закрыт SSRF через link preview: проверка localhost, приватных IP, ограничение протоколов и портов</li>
+                <li>Добавлен allowlist CDN (Cloudinary, TikTok) для fileUrl при загрузке</li>
+                <li>Добавлен securityLimiter на panic-password, 2FA, archive-password</li>
+                <li>Добавлен aiLimiter на AI-маршруты</li>
+                <li>Добавлен keyGenerator всем rate-лимитерам вместо глобального счётчика</li>
+                <li>Cloudinary-файлы при удалении аккаунта теперь удаляются только от отправителя</li>
+                <li>При смене pushToken отправляется уведомление на старый device</li>
+                <li>Service Worker больше не кэширует /api/*</li>
+                <li>Добавлена очистка коллекции sessions при nuke аккаунта</li>
+                <li>Migration: ранний exit через Message.exists вместо полной загрузки</li>
+            </ul>
+
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Производительность
+            </div>
+            <ul class="changes-list">
+                <li>Добавлен .lean() в 26 read-only запросов к базе данных для снижения нагрузки на MongoDB</li>
+                <li>Восстановлен быстрый путь для статических файлов (express.static до middleware), устранено мерцание экрана при загрузке</li>
+                <li>Удалён дублирующийся вызов express.static('public')</li>
+            </ul>
+                </div>   
+
+        <div class="update-card">
+            <div class="card-header">
+                <div class="version-badge">
+                    <i class="fas fa-code-branch"></i>
                     1.0.1
                 </div>
                 <div class="type-badge">
@@ -790,7 +863,7 @@
                     <div class="version-item-desc">Незначительные обновления</div>
                 </div>
                 <div class="version-item">
-                    <div class="version-item-code">1</div>
+                    <div class="version-item-code">3</div>
                     <div class="version-item-desc">Минорные обновления и багфиксы</div>
                 </div>
             </div>
@@ -951,7 +1024,33 @@
             "При быстром скролле автопроигрыватель не потеряет позицию": "During fast scrolling, the autoplay will not lose its position",
             "Минимализм в группах: убраны маленькие круглые аватары возле бабла сообщения в группах": "Minimalism in groups: removed small round avatars near the message bubble in groups",
             "Корректное удаление сообщений: раньше если вы только отправили сообщение и пытались его удалить, сервер не успевал присвоить ему айди и сообщение удалялось со второго раза": "Correct message deletion: previously, if you just sent a message and tried to delete it, the server didn't have time to assign it an ID and the message was deleted on the second try",
-            "Исправили баг, когда при создании новой группы к ней могла случайно прикрепиться аватарка от предыдущей": "Fixed a bug where creating a new group could accidentally attach the avatar from the previous one"
+            "Исправили баг, когда при создании новой группы к ней могла случайно прикрепиться аватарка от предыдущей": "Fixed a bug where creating a new group could accidentally attach the avatar from the previous one",
+            "Исправлена утечка данных приватности: при синхронизации теперь передаются только свои настройки, а не всех пользователей": "Fixed a privacy data leak: synchronization now only sends your own settings instead of all users' data",
+            "Добавлена фильтрация прототипных ключей (__proto__, constructor, prototype) при очистке входных данных (NoSQL-инъекции)": "Added filtering of prototype keys (__proto__, constructor, prototype) during input sanitization (NoSQL injection)",
+            "Ограничена роль пользователя строгим enum на уровне схемы (user, admin, banned)": "Restricted user role to a strict enum at the schema level (user, admin, banned)",
+            "Добавлена fail-fast валидация JWT_SECRET и ENCRYPTION_KEY при старте сервера": "Added fail-fast validation of JWT_SECRET and ENCRYPTION_KEY on server startup",
+            "Скрыты чувствительные поля (token, ip, password, panicPassword, twoFactorPassword, sessions, pushToken) в admin и sessions endpoints": "Hidden sensitive fields (token, ip, password, panicPassword, twoFactorPassword, sessions, pushToken) in admin and sessions endpoints",
+            "Добавлен authenticateToken на эндпоинты reactions, /users": "Added authenticateToken to reactions and /users endpoints",
+            "Добавлена проверка членства в комнате перед mark_read": "Added room membership check before mark_read",
+            "Добавлена проверка существования получателя перед отправкой direct message": "Added recipient existence check before sending direct messages",
+            "Удалён joinRequests из ответа при получении информации о комнате": "Removed joinRequests from the room info response",
+            "Удалены err.message из пользовательских ошибок (AI, общие)": "Removed err.message from user-facing errors (AI, general)",
+            "Добавлена валидация и нормализация полей на уровне схем: publicLink (lowercase/trim/match), maxlength для name, description, fileName, reply_to, tempId": "Added schema-level field validation and normalization: publicLink (lowercase/trim/match), maxlength for name, description, fileName, reply_to, tempId",
+            "Закрыт SSRF через link preview: проверка localhost, приватных IP, ограничение протоколов и портов": "Fixed SSRF in link preview: localhost and private IP checks, restricted protocols and ports",
+            "Добавлен allowlist CDN (Cloudinary, TikTok) для fileUrl при загрузке": "Added CDN allowlist (Cloudinary, TikTok) for fileUrl on upload",
+            "Добавлен securityLimiter на panic-password, 2FA, archive-password": "Added securityLimiter to panic-password, 2FA, and archive-password endpoints",
+            "Добавлен aiLimiter на AI-маршруты": "Added aiLimiter to AI routes",
+            "Добавлен keyGenerator всем rate-лимитерам вместо глобального счётчика": "Added keyGenerator to all rate limiters instead of a global counter",
+            "Cloudinary-файлы при удалении аккаунта теперь удаляются только от отправителя": "Cloudinary files are now deleted only for the sender when deleting an account",
+            "При смене pushToken отправляется уведомление на старый device": "Sends a notification to the old device when pushToken is changed",
+            "Service Worker больше не кэширует /api/*": "Service Worker no longer caches /api/*",
+            "Добавлена очистка коллекции sessions при nuke аккаунта": "Added sessions collection cleanup on account deletion",
+            "Migration: ранний exit через Message.exists вместо полной загрузки": "Migration: early exit via Message.exists instead of full load",
+            "Добавлен .lean() в 26 read-only запросов к базе данных для снижения нагрузки на MongoDB": "Added .lean() to 26 read-only database queries to reduce MongoDB load",
+            "Восстановлен быстрый путь для статических файлов (express.static до middleware), устранено мерцание экрана при загрузке": "Restored a fast path for static files (express.static before middleware), fixed loading screen flickering",
+            "Удалён дублирующийся вызов express.static('public')": "Removed duplicate express.static('public') call",
+            "Добавлен throttle для lastActive: запись в БД теперь не чаще раза в 5 минут вместо каждого запроса": "Added lastActive throttling: writes to DB now at most once every 5 minutes instead of on every request",
+            "Заменены 4 .save() на updateOne: pushToken, panicPassword, 2FA setup, 2FA disable": "Replaced 4 .save() with updateOne: pushToken, panicPassword, 2FA setup, 2FA disable"
         };
 
         document.querySelectorAll('.page-title, .page-subtitle, .type-badge, .section-title, .versioning-title, .version-item-desc').forEach(function(el){

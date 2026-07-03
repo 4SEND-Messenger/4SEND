@@ -2,9 +2,9 @@
   "name": "messenger-4send",
   "version": "1.1.0",
   "description": "4SEND - Messenger",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "author": "4SEND Team",
   "license": "ISC",

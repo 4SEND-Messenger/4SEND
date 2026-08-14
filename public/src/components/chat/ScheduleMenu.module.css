@@ -1,0 +1,127 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.backdrop {
+  position: fixed;
+  bottom: 140px;
+  right: 20px;
+  z-index: 9999;
+  animation: fadeIn 0.15s ease;
+}
+
+.menu {
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 200px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.2s ease;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #fff;
+  font-size: calc(14px * var(--font-size-scale));
+  background: transparent;
+  border: none;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.option:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.1);
+}
+
+.customHeader {
+  padding: 8px 16px 4px;
+  color: #888;
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.datetimeInput {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  border-radius: 10px;
+  color: #fff;
+  font-size: calc(14px * var(--font-size-scale));
+  outline: none;
+}
+
+.datetimeInput:focus {
+  border-color: var(--accent-solid);
+}
+
+.datetimeInput::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.customActions {
+  display: flex;
+  gap: 8px;
+  padding: 4px 16px 8px;
+}
+
+.customCancel {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #888;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.customCancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.customConfirm {
+  flex: 1;
+  padding: 10px;
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.customConfirm:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.customConfirm:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

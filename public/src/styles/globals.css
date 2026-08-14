@@ -1,0 +1,195 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main, "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[contenteditable=true], input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html, body {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg);
+  color: #f0f0f0;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  font-size: var(--font-size-base, 15px);
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+button, input, select, textarea {
+  font-family: var(--font-main, "Plus Jakarta Sans", sans-serif);
+}
+
+a {
+  color: var(--accent-solid);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: var(--accent-solid, #a74fff);
+  color: var(--on-accent, #fff);
+}
+
+::-moz-selection {
+  background: var(--accent-solid, #a74fff);
+  color: var(--on-accent, #fff);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 79, 255, 0.3);
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+html[data-scrollbar="thin"] ::-webkit-scrollbar { width: 3px; }
+html[data-scrollbar="normal"] ::-webkit-scrollbar { width: 5px; }
+html[data-scrollbar="medium"] ::-webkit-scrollbar { width: 8px; }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+* {
+  scrollbar-color: rgba(167, 79, 255, 0.3) transparent;
+}
+
+::-webkit-scrollbar { display: none !important; }
+
+* {
+  scrollbar-color: transparent transparent !important;
+  scrollbar-width: none !important;
+}
+
+.msgContainer, .contactList, .chatArea,
+[class*="scrollArea"], [class*="leftPanel"], [class*="rightPanel"],
+[class*="menuList"], [class*="results"] {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(167, 79, 255, 0.3) transparent !important;
+}
+
+.msgContainer::-webkit-scrollbar,
+.contactList::-webkit-scrollbar,
+.chatArea::-webkit-scrollbar,
+[class*="scrollArea"]::-webkit-scrollbar,
+[class*="leftPanel"]::-webkit-scrollbar,
+[class*="rightPanel"]::-webkit-scrollbar,
+[class*="menuList"]::-webkit-scrollbar,
+[class*="results"]::-webkit-scrollbar {
+  display: block !important;
+  width: 5px;
+}
+
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="infoBox"] { display: none; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="sidebarTitle"] { display: none; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="sidebarHeaderLeft"] { gap: 0; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="sidebarHeader"] { padding: 12px 8px 12px 14px; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="searchWrapper"] { display: none; }
+html[data-sidebar="compact"] [class*="sidebarHeader"] [class*="controlBtn"]:last-child { display: none; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="contactItem"] { justify-content: center; padding: 8px; gap: 0; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="unreadBadge"] { top: 2px; right: 2px; min-width: 8px; height: 8px; border-radius: 50%; padding: 0; font-size: 0; }
+html[data-sidebar="compact"] [class*="sidebar_"] [class*="avatarBox"] { margin: 0; }
+
+input, textarea, select {
+  outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #777;
+}
+
+input:disabled, textarea:disabled, button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+[data-anim-off] *,
+[data-anim-off] *::before,
+[data-anim-off] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-anim-fast] *,
+[data-anim-fast] *::before,
+[data-anim-fast] *::after {
+  animation-duration: 0.12s;
+  transition-duration: 0.12s;
+}
+
+[data-anim-fast] [data-anim-preserve] *,
+[data-anim-fast] [data-anim-preserve] *::before,
+[data-anim-fast] [data-anim-preserve] *::after {
+  animation-duration: initial;
+  transition-duration: initial;
+}
+
+[data-anim-off] [data-anim-preserve] *,
+[data-anim-off] [data-anim-preserve] *::before,
+[data-anim-off] [data-anim-preserve] *::after {
+  animation: initial !important;
+  transition: initial !important;
+}
+
+@keyframes gpu-init { from { transform: translateZ(0); } to { transform: translateZ(0); } }
+
+*, *::before, *::after {
+  will-change: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[style*="transform"],
+[style*="animation"],
+[style*="transition"],
+[class*="modal"],
+[class*="overlay"],
+[class*="drawer"],
+[class*="panel"],
+[class*="context"],
+[class*="toast"],
+[class*="popup"],
+[class*="menu"],
+[class*="transition"],
+[class*="slide"],
+[class*="scale"],
+[class*="fade"],
+[class*="anim"] {
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+input, textarea {
+  will-change: auto;
+  contain: none;
+}

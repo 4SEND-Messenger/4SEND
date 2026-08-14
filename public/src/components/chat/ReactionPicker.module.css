@@ -1,0 +1,50 @@
+.picker {
+  position: fixed;
+  z-index: 10002;
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  border-radius: 24px;
+  padding: 8px 12px;
+  display: flex;
+  gap: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.2s ease;
+}
+
+.emoji {
+  font-size: calc(24px * var(--font-size-scale));
+  padding: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  border: none;
+  color: #fff;
+}
+
+.emoji:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.15);
+  transform: scale(1.2);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}

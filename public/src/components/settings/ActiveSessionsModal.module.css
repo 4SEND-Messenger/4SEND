@@ -1,0 +1,139 @@
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revokeAllBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 77, 77, 0.12);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  border-radius: 14px;
+  color: #ff4d4d;
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 10px;
+  margin-top: -8px;
+}
+
+.revokeAllBtn:hover {
+  background: rgba(255, 77, 77, 0.2);
+  border-color: rgba(255, 77, 77, 0.5);
+}
+
+.revokeAllBtn:active {
+  transform: scale(0.98);
+}
+
+.sessionCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: transparent;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.currentCard {
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.5);
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.05);
+}
+
+.sessionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.sessionDevice {
+  color: #fff;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.sessionMeta {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  line-height: 1.4;
+}
+
+.currentBadge {
+  color: var(--accent-solid);
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.revokeBtn {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.revokeBtn:hover {
+  background: rgba(255, 77, 77, 0.25);
+}
+
+.revokeBtn:active {
+  transform: scale(0.95);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+  border-top-color: var(--accent-solid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #555;
+  font-size: calc(14px * var(--font-size-scale));
+}
+
+.error {
+  color: #ff4d4d;
+  text-align: center;
+  padding: 12px;
+  font-size: calc(14px * var(--font-size-scale));
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

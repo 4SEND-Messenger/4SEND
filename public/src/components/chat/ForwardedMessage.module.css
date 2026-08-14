@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  opacity: 0.9;
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--accent-solid);
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: calc(12px * var(--font-size-scale));
+  color: var(--accent-solid);
+  font-weight: 600;
+}

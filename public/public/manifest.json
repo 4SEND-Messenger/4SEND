@@ -1,0 +1,21 @@
+{
+  "name": "4SEND Messenger",
+  "short_name": "4SEND",
+  "description": "Free and secure messenger with encrypted data",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f13",
+  "theme_color": "#a74fff",
+  "icons": [
+    {
+      "src": "/ico.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/ico.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

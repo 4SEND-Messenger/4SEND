@@ -1,0 +1,154 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  transition: opacity 0.3s ease;
+}
+
+.overlayClosing {
+  opacity: 0;
+}
+
+.editor {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.98);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.editorClosing {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: calc(18px * var(--font-size-scale));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.canvasWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  min-height: 0;
+}
+
+.canvas {
+  max-width: 100%;
+  max-height: 50vh;
+  border-radius: 12px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 16px;
+}
+
+.toolBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.9);
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toolBtn:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+  color: var(--on-accent, #fff);
+  animation: spin 0.3s ease;
+}
+
+.captionInput {
+  margin: 8px 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: calc(14px * var(--font-size-scale));
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.captionInput::placeholder {
+  color: #666;
+}
+
+.captionInput:focus {
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.4);
+}
+
+.sendBtn {
+  margin: 4px 16px 16px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sendBtn:hover {
+  background: var(--accent-hover, #b86fff);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(90deg); }
+}

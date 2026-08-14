@@ -1,0 +1,218 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes scaleOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.8) translateY(20px); }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--overlay-rgb, 30, 27, 36), 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.overlay.open {
+  opacity: 1;
+}
+
+.overlay.closing {
+  animation: fadeOut 0.4s ease forwards;
+  pointer-events: none;
+}
+
+.modal {
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin: 0 auto;
+}
+
+.modal::-webkit-scrollbar {
+  display: none;
+}
+
+.overlay.open .modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.overlay.closing .modal {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.backBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--accent-solid, #9d4edd);
+  font-size: calc(24px * var(--font-size-scale));
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  color: #fff;
+  font-size: calc(18px * var(--font-size-scale));
+  font-weight: 700;
+}
+
+.placeholder {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.scrollContent {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  padding: 0 8px 12px 8px;
+  color: #8e8e93;
+  font-size: calc(11px * var(--font-size-scale));
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sectionGroup {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.08);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.hubItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hubItem:last-child {
+  border-bottom: none;
+}
+
+.hubItem:hover {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+}
+
+.hubItem.dangerHover:hover {
+  background: rgba(255, 59, 48, 0.15);
+}
+
+.iconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconBox svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+}
+
+.textBlock {
+  flex: 1;
+}
+
+.itemLabel {
+  color: #fff;
+  font-size: calc(17px * var(--font-size-scale));
+  font-weight: 600;
+  display: block;
+}
+
+.dangerText {
+  color: #ff3b30;
+}
+
+.itemDesc {
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  margin-top: 3px;
+  display: block;
+}
+
+.arrow {
+  color: var(--accent-solid, #9d4edd);
+  font-size: calc(20px * var(--font-size-scale));
+  margin-left: auto;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.arrow.danger {
+  color: #ff3b30;
+}

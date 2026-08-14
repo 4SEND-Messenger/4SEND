@@ -1,0 +1,57 @@
+.fileMessage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.08);
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+  min-width: 200px;
+}
+
+.fileIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconSvg {
+  width: 24px;
+  height: 24px;
+  fill: white;
+}
+
+.fileInfo {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fileName {
+  color: #eee;
+  font-weight: 600;
+  font-size: calc(14px * var(--font-size-scale));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.downloadLabel {
+  font-size: calc(12px * var(--font-size-scale));
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.fileDisabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}

@@ -1,0 +1,131 @@
+.iconCircle {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 59, 48, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  border: 2px solid rgba(255, 59, 48, 0.3);
+}
+
+.title {
+  color: #fff;
+  margin: 0 0 12px 0;
+  font-size: calc(22px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+}
+
+.description {
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.fieldGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  color: #8e8e93;
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 59, 48, 0.3);
+  border-radius: 14px;
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  font-size: calc(15px * var(--font-size-scale));
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.input:last-child {
+  margin-bottom: 0;
+}
+
+.input::placeholder {
+  color: #555;
+}
+
+.input:focus {
+  border-color: #ff3b30;
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.error {
+  color: #ff3b30;
+  font-size: calc(13px * var(--font-size-scale));
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.deleteBtn {
+  width: 100%;
+  padding: 16px;
+  background: #ff3b30;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: calc(16px * var(--font-size-scale));
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.4);
+}
+
+.deleteBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 59, 48, 0.4);
+}
+
+.deleteBtn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 14px;
+  color: #d0d0d0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: calc(16px * var(--font-size-scale));
+  letter-spacing: 0.5px;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}

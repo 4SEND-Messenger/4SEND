@@ -1,0 +1,49 @@
+.grid {
+  display: grid;
+  gap: 2px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.grid2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.gridMany {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cell {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  min-height: 100px;
+  max-height: 120px;
+}
+
+.grid2 .cell {
+  max-height: 250px;
+}
+
+.grid4 .cell {
+  max-height: 150px;
+}
+
+.cell3First {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  grid-column: span 2;
+  max-height: 250px;
+}

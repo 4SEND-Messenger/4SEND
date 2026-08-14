@@ -1,0 +1,64 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 8px;
+  margin-top: 4px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.warningIcon {
+  width: 16px;
+  height: 16px;
+  fill: #ff3b30;
+  flex-shrink: 0;
+}
+
+.text {
+  color: #ff3b30;
+  font-size: calc(12px * var(--font-size-scale));
+  flex: 1;
+}
+
+.retryBtn {
+  padding: 4px 12px;
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 6px;
+  font-size: calc(12px * var(--font-size-scale));
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.retryBtn:hover {
+  background: #9333ea;
+}
+
+.removeBtn {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #888;
+  border: none;
+  border-radius: 6px;
+  font-size: calc(12px * var(--font-size-scale));
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

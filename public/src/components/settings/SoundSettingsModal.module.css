@@ -1,0 +1,115 @@
+.sliderSection {
+  margin-bottom: 20px;
+}
+
+.label {
+  color: #8e8e93;
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.sliderIcon {
+  width: 22px;
+  height: 22px;
+  fill: #8e8e93;
+  flex-shrink: 0;
+  transition: fill 0.2s ease;
+}
+
+.sliderIcon.active {
+  fill: #34c759;
+}
+
+.sliderIcon.muted {
+  fill: #ff3b30;
+}
+
+.slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  transition: background 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #34c759;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 12px rgba(52, 199, 89, 0.6);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #34c759;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.4);
+}
+
+.status {
+  text-align: center;
+  font-size: calc(14px * var(--font-size-scale));
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.activeStatus {
+  color: #34c759;
+}
+
+.mutedStatus {
+  color: #8e8e93;
+}
+
+.testBtn {
+  width: 100%;
+  padding: 16px;
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+  color: var(--accent-solid);
+  border: 2px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.testBtn:hover {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.25);
+  border-color: rgba(var(--accent-rgb, 157, 78, 221), 0.5);
+  transform: translateY(-1px);
+}
+
+.testBtn:active {
+  transform: translateY(0);
+}

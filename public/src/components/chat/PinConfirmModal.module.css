@@ -1,0 +1,124 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20000;
+  animation: fadeIn 0.5s ease;
+}
+
+.overlay.closing {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  width: 400px;
+  max-width: 90vw;
+  padding: 32px 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  z-index: 20001;
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.closing {
+  animation: scaleOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.title {
+  color: #fff;
+  font-size: calc(18px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.preview {
+  color: #888;
+  font-size: calc(13px * var(--font-size-scale));
+  text-align: center;
+  margin-bottom: 24px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinAllBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 12px;
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: opacity 0.2s;
+}
+
+.pinAllBtn:hover {
+  opacity: 0.85;
+}
+
+.pinMeBtn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 12px;
+  font-size: calc(15px * var(--font-size-scale));
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pinMeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cancelBtn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: none;
+  color: #888;
+  border: none;
+  font-size: calc(14px * var(--font-size-scale));
+  cursor: pointer;
+  margin-top: 4px;
+  transition: color 0.2s;
+}
+
+.cancelBtn:hover {
+  color: #bbb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes scaleIn {
+  from { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes scaleOut {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  to { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+}

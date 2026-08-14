@@ -1,0 +1,81 @@
+.content {
+  text-align: center;
+  padding: 20px 20px 0;
+}
+
+.iconWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 77, 77, 0.15);
+  border: 2px solid rgba(255, 77, 77, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconCircle svg {
+  width: 32px;
+  height: 32px;
+  fill: #ff4d4d;
+}
+
+.title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.desc {
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px 0;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.deleteBtn {
+  flex: 1;
+  padding: 12px 0;
+  background: #ff3b30;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.deleteBtn:hover {
+  opacity: 0.85;
+}

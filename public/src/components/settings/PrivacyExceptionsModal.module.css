@@ -1,0 +1,215 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--overlay-rgb, 30, 27, 36), 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: fadeIn 0.5s ease;
+}
+
+.modal {
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  width: 90%;
+  max-width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 32px 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal::-webkit-scrollbar {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.backBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--accent-solid, #9d4edd);
+  font-size: calc(24px * var(--font-size-scale));
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.title {
+  color: #fff;
+  font-size: calc(18px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+  flex: 1;
+}
+
+.loading {
+  text-align: center;
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  padding: 32px 0;
+}
+
+.empty {
+  text-align: center;
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  padding: 32px 0;
+}
+
+.list {
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.contactRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.contactRow:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.contactSelected {
+  background: rgba(0, 122, 255, 0.15);
+}
+
+.contactInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.contactAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  color: var(--accent-solid, #9d4edd);
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 700;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.contactName {
+  color: #fff;
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contactUsername {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.checkboxChecked {
+  background: var(--accent-solid, #007aff);
+  border-color: var(--accent-solid, #007aff);
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 16px;
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+  color: var(--on-accent, #fff);
+  border: 2px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  margin-top: 24px;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.25);
+}

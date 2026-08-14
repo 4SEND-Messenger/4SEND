@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  pointer-events: auto;
+  position: absolute;
+  bottom: -14px;
+  z-index: 2;
+}
+
+.container.sent {
+  right: 10px;
+}
+
+.container.received {
+  left: 10px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.15);
+  border: 1px solid rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+  border-radius: 10px;
+  font-size: calc(12px * var(--font-size-scale));
+  cursor: pointer;
+  color: var(--on-accent, #eee);
+  transition: background 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+.pill:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.25);
+}
+
+.count {
+  opacity: 0.8;
+  font-weight: 600;
+}

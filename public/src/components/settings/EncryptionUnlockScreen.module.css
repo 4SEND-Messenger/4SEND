@@ -1,0 +1,142 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg, #0a0a0c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483647;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.overlay.visible {
+  opacity: 1;
+}
+
+.overlay.closing {
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 32px;
+  max-width: 380px;
+  width: 90vw;
+}
+
+.heroIcon {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+.passwordRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  text-align: center;
+  letter-spacing: 6px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  text-transform: uppercase;
+}
+
+.input:focus {
+  border-color: var(--accent-solid, #a74fff);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 167, 79, 255), 0.15);
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.15);
+  letter-spacing: 2px;
+  font-weight: 400;
+}
+
+.error {
+  color: #ff3b30;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(255, 59, 48, 0.1);
+  border-radius: 10px;
+  width: 100%;
+}
+
+.unlockBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent-solid, #a74fff);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unlockBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+}
+
+.unlockBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.unlockBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

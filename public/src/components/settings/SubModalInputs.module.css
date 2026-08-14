@@ -1,0 +1,121 @@
+.fieldGroup {
+  margin-bottom: 16px;
+}
+
+.fieldGroup:last-of-type {
+  margin-bottom: 24px;
+}
+
+.fieldLabel {
+  display: block;
+  color: #8e8e93;
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: calc(15px * var(--font-size-scale));
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  border-color: #34c759;
+  background: rgba(52, 199, 89, 0.1);
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.input.dangerFocus:focus {
+  border-color: #ff3b30;
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-bottom: 12px;
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saveBtn {
+  background: linear-gradient(135deg, #34c759, #28a745);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+}
+
+.saveBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(52, 199, 89, 0.4);
+}
+
+.dangerBtn {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: rgba(255, 77, 77, 0.25);
+}
+
+.statusBadge {
+  text-align: center;
+  font-size: calc(14px * var(--font-size-scale));
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.statusEnabled {
+  color: #4caf50;
+}
+
+.statusDisabled {
+  color: #888;
+}
+
+.infoText {
+  color: #888;
+  font-size: calc(14px * var(--font-size-scale));
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.warningText {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.warningText b {
+  color: #ff3b30;
+}

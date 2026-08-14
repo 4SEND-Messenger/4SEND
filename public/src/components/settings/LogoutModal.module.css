@@ -1,0 +1,72 @@
+.iconCircle {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 59, 48, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.title {
+  color: #fff;
+  margin: 0 0 10px 0;
+  font-size: calc(22px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+}
+
+.description {
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logoutBtn {
+  flex: 1;
+  padding: 14px;
+  background: #ff3b30;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: calc(15px * var(--font-size-scale));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.logoutBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 59, 48, 0.4);
+}
+
+.logoutBtn:active {
+  transform: translateY(0);
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d0d0d0;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: calc(15px * var(--font-size-scale));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}

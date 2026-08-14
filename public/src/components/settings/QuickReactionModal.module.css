@@ -1,0 +1,71 @@
+.subtitle {
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: -12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.emojiItem {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.emojiItem:hover {
+  background: rgba(255, 149, 0, 0.08);
+  transform: scale(1.06);
+}
+
+.emojiItem:active {
+  transform: scale(0.95);
+}
+
+.emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.selected {
+  background: rgba(255, 149, 0, 0.12);
+  border-color: #ff9500;
+  box-shadow: 0 0 12px rgba(255, 149, 0, 0.2);
+}
+
+.selected:hover {
+  background: rgba(255, 149, 0, 0.18);
+  box-shadow: 0 0 16px rgba(255, 149, 0, 0.3);
+}
+
+.checkBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  background: #ff9500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}

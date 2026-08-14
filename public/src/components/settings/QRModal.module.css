@@ -1,0 +1,207 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--overlay-rgb, 30, 27, 36), 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: fadeIn 0.5s ease;
+}
+
+.modal {
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  width: 90%;
+  max-width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 32px 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal::-webkit-scrollbar {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.backBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--accent-solid, #9d4edd);
+  font-size: calc(24px * var(--font-size-scale));
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.title {
+  color: #fff;
+  font-size: calc(18px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+  flex: 1;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tabActive {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+  border-color: var(--accent-solid, #9d4edd);
+  color: var(--on-accent, #fff);
+}
+
+.qrContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.qrBox {
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.qrCanvas {
+  width: 180px !important;
+  height: 180px !important;
+  border-radius: 12px;
+}
+
+.username {
+  color: var(--accent-solid);
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 700;
+  text-align: center;
+  margin: 10px 0 0 0;
+}
+
+.scanHint {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  text-align: center;
+  margin: 0 0 16px 0;
+}
+
+.scannerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.scannerRegion {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1 / 1;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.scannerRegion video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.scannerError {
+  color: #ff6b6b;
+  font-size: calc(14px * var(--font-size-scale));
+  text-align: center;
+}
+
+.scannerText {
+  color: #fff;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  text-align: center;
+}
+
+.scannerSubtext {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  text-align: center;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 16px;
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+  color: var(--on-accent, #fff);
+  border: 2px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: calc(16px * var(--font-size-scale));
+  font-weight: 600;
+  margin-top: 24px;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.25);
+}

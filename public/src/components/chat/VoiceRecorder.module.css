@@ -1,0 +1,198 @@
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes fadeOutDown {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to { opacity: 0; transform: translateX(-50%) translateY(10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.container {
+  position: fixed;
+  bottom: 80px;
+  left: calc(50% + var(--sidebar-width, 320px) / 2);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  animation: fadeInUp 0.25s ease forwards;
+  opacity: 0;
+}
+
+.container.closing {
+  animation: fadeOutDown 0.2s ease forwards;
+}
+
+@media (max-width: 768px) {
+  .container {
+    left: 50% !important;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .pill {
+    width: calc(100vw - 24px) !important;
+  }
+}
+
+.videoPreview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--accent-solid);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.camControls {
+  display: flex;
+  gap: 12px;
+  margin-top: -4px;
+}
+
+.camBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.camBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 30px;
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  justify-content: space-between;
+}
+
+.pillLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #ff3b30;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+.timer {
+  color: #fff;
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.waveform {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  height: 30px;
+  flex: 1;
+  overflow: hidden;
+  justify-content: center;
+}
+
+.bar {
+  width: 3px;
+  background: var(--accent-solid);
+  border-radius: 2px;
+  transition: height 0.1s;
+}
+
+.pillRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancel {
+  color: #888;
+  font-size: calc(13px * var(--font-size-scale));
+  cursor: pointer;
+}
+
+.cancel:hover {
+  color: #aaa;
+}
+
+.sendBtn {
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.sendBtn:hover {
+  opacity: 0.85;
+}
+
+.trashBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.trashBtn:hover {
+  background: rgba(255, 77, 77, 0.15);
+}
+
+.videoBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pillLocked {
+  border-color: rgba(255, 77, 77, 0.4);
+}

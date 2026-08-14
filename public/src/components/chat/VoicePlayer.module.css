@@ -1,0 +1,103 @@
+.outer {
+  display: flex;
+  align-items: center;
+}
+
+.voicePlayer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 56px 12px 20px;
+  border-radius: 28px;
+  min-width: 280px;
+  user-select: none;
+  position: relative;
+}
+
+.playBtn {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent-solid), var(--accent-hover));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  padding: 0;
+}
+
+.playBtn:active {
+  transform: scale(0.9);
+}
+
+.playIcon {
+  width: 18px;
+  height: 18px;
+  fill: var(--on-accent, #fff);
+}
+
+.waves {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.bar {
+  width: 3px;
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+  border-radius: 2px;
+  transition: background 0.1s;
+}
+
+.barActive {
+  background: var(--accent-solid);
+}
+
+.time {
+  position: absolute;
+  right: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: calc(13px * var(--font-size-scale));
+  color: #888;
+  white-space: nowrap;
+}
+
+.speedBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.1);
+  border: 1px solid rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+  border-radius: 8px;
+  color: var(--accent-solid);
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: bold;
+  padding: 4px 6px;
+  cursor: pointer;
+  min-width: 36px;
+  z-index: 10;
+  transition: 0.2s;
+}
+
+.speedBtn:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-solid);
+  border-radius: 50%;
+  box-shadow: 0 0 5px var(--accent-solid);
+  flex-shrink: 0;
+  margin-left: 8px;
+}

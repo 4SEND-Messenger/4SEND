@@ -1,0 +1,259 @@
+.wrapper {
+  padding: 0 2px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.infoRow + .infoRow {
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.infoLabel {
+  font-size: 13px;
+  color: #888;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: #eee;
+  font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatListContainer {
+  max-height: 160px;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.chatItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #bbb;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.chatItem:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.chatAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.chatName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatType {
+  font-size: 10px;
+  color: #555;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.03);
+  flex-shrink: 0;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.checkboxChecked {
+  background: var(--accent-solid, #a74fff);
+  border-color: var(--accent-solid, #a74fff);
+}
+
+.checkboxChecked svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.checkboxRows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowCheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
+  color: #bbb;
+}
+
+.rowCheck:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.formatGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.formatBtn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: #888;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.formatBtn:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.formatActive {
+  border-color: var(--accent-solid, #a74fff);
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.08);
+  color: var(--accent-solid, #a74fff);
+}
+
+.exportBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent-solid, #a74fff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+
+.exportBtn:hover {
+  opacity: 0.9;
+}
+
+.exportBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.totalInfo {
+  font-size: 11px;
+  color: #555;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.progressSection {
+  margin-bottom: 12px;
+}
+
+.progressBar {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent-solid, #a74fff);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #888;
+}
+
+.cancelBtn {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: #bbb;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.cancelBtn:hover {
+  background: rgba(255,80,80,0.15);
+  border-color: rgba(255,80,80,0.3);
+  color: #ff5a5a;
+}

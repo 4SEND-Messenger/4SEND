@@ -1,0 +1,238 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.folderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.folderRow:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.moveBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.moveBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+  color: #999;
+}
+
+.moveBtn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.folderIconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.folderName {
+  flex: 1;
+  color: #eee;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatCount {
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.04);
+  padding: 2px 8px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.folderRow:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+}
+
+.addFolderBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addFolderBtn:hover {
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.35);
+  color: var(--accent-solid, #a74fff);
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.04);
+}
+
+.createForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+
+.iconPicker {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.iconBtn {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.04);
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.iconBtn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.iconActive {
+  border-width: 1.5px;
+}
+
+.nameInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: #eee;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.nameInput:focus {
+  border-color: var(--accent-solid, #a74fff);
+}
+
+.nameInput::placeholder {
+  color: #555;
+}
+
+.createActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: #888;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cancelBtn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.createBtn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-solid, #a74fff);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.createBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.createBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
+}

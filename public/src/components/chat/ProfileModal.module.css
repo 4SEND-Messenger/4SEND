@@ -1,0 +1,320 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  z-index: 12000;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(var(--overlay-rgb, 0, 0, 0), 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay.closing {
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: all 0.3s ease;
+}
+
+.overlay > div {
+  transform: scale(0.85) translateY(30px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.overlay.active > div {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.overlay.closing > div {
+  transform: scale(0.9);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.modal {
+  background: rgba(var(--card-rgb, 42, 38, 51), 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  width: 90%;
+  max-width: 400px;
+  padding: 0;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.modal::-webkit-scrollbar { display: none; }
+
+.avatarWrap {
+  padding: 30px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.closeX {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s, color 0.2s;
+  font-size: 14px;
+}
+
+.closeX:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.avatarSection {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  background: var(--card);
+  border: 2px solid var(--accent-solid);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent-solid), var(--accent-hover));
+  color: var(--text-primary);
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.displayName {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: calc(22px * var(--font-size-scale));
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+.verifiedIcon {
+  width: 20px;
+  height: 20px;
+  fill: var(--accent-solid);
+  flex-shrink: 0;
+}
+
+.mutedIcon {
+  width: 14px;
+  height: 14px;
+  fill: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.username {
+  color: var(--accent-solid);
+  font-size: calc(14px * var(--font-size-scale));
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.roomBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.roomBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-solid);
+}
+
+.status {
+  font-size: calc(13px * var(--font-size-scale));
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px 20px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.actionIcon {
+  width: 22px;
+  height: 22px;
+  fill: var(--text-primary);
+}
+
+.actionLabel {
+  color: var(--text-primary);
+  font-size: calc(12px * var(--font-size-scale));
+  font-weight: 500;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: calc(14px * var(--font-size-scale));
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  transition: opacity 0.2s;
+}
+
+.closeBtn:hover {
+  opacity: 0.8;
+}
+
+.blockBtn {
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
+  border-radius: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: calc(13px * var(--font-size-scale));
+  letter-spacing: 0.5px;
+  transition: background 0.3s;
+}
+
+.blockBtn:hover {
+  background: var(--error-bg);
+}
+
+.bioSection {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  color: var(--accent-solid);
+  font-size: calc(11px * var(--font-size-scale));
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.bioText {
+  color: var(--text-secondary);
+  font-size: calc(14px * var(--font-size-scale));
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.mediaSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.mediaGrid + .mediaGrid {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.editProfileBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.15);
+  color: var(--accent-solid);
+  border: 1px solid rgba(var(--accent-rgb, 157, 78, 221), 0.3);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.editProfileBtn:hover {
+  background: rgba(var(--accent-rgb, 157, 78, 221), 0.25);
+}

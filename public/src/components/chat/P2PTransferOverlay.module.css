@@ -1,0 +1,233 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.overlayVisible {
+  opacity: 1;
+}
+
+.card {
+  position: relative;
+  background: rgba(25,25,30,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 24px;
+  width: 320px;
+  max-width: 88vw;
+  max-height: min(70dvh, 480px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  flex: none;
+  align-self: center;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.closeIcon {
+  width: 18px;
+  height: 18px;
+  fill: rgba(255,255,255,0.6);
+}
+
+.iconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a74fff, #7b2dbf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.iconIncoming {
+  background: linear-gradient(135deg, #4fc3f7, #0288d1);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}
+
+.incomingFrom {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.fileName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  word-break: break-all;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+.fileSize {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
+
+.progressWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #a74fff, #7b2dbf);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.progressText {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+}
+
+.statusLabel {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.incomingActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.btnDownload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a74fff, #7b2dbf);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btnDownload:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(167,79,255,0.4);
+}
+
+.btnIcon {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+}
+
+.btnCancel {
+  padding: 10px 24px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnCancel:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.btnAccept {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btnAccept:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(76,175,80,0.4);
+}
+
+.btnDecline {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnDecline:hover {
+  background: rgba(255,255,255,0.08);
+}

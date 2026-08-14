@@ -1,0 +1,103 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.item {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.itemOpen {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.3);
+}
+
+.itemHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.itemQ {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  color: #777;
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  color: var(--accent-solid, #a74fff);
+}
+
+.itemA {
+  color: #cdcdcd;
+  font-size: 13.5px;
+  line-height: 1.65;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0 14px 14px;
+  padding: 12px 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.supportBtn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-solid, #a74fff), #8b3dff);
+  box-shadow: 0 4px 12px rgba(167, 79, 255, 0.3);
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.supportBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(167, 79, 255, 0.4);
+}

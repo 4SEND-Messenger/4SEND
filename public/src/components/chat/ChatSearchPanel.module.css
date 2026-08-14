@@ -1,0 +1,232 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sidebar, var(--sidebar));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent-solid);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.backBtn:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.1);
+}
+
+.headerLabel {
+  font-size: calc(14px * var(--font-size-scale));
+  color: var(--accent-solid);
+  font-weight: 500;
+}
+
+.filterRow {
+  padding: 0 16px 10px;
+}
+
+.chatFilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.chatFilter:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filterAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.filterAvatarPlaceholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-solid), var(--accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-accent, #fff);
+  font-size: calc(13px * var(--font-size-scale));
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.filterName {
+  font-size: calc(14px * var(--font-size-scale));
+  color: #fff;
+  font-weight: 500;
+}
+
+.filterArrow {
+  color: #888;
+  width: 14px;
+  height: 14px;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border, var(--border));
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.inputWrapper:focus-within {
+  border-color: rgba(var(--accent-rgb, 167, 79, 255), 0.4);
+}
+
+.searchIcon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: calc(14px * var(--font-size-scale));
+  padding: 0;
+}
+
+.input::placeholder {
+  color: #666;
+}
+
+.clearBtn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: calc(14px * var(--font-size-scale));
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.clearBtn:hover {
+  color: #fff;
+}
+
+.results {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.resultItem {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.resultItem:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.06);
+}
+
+.resultItem.active {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.1);
+}
+
+.resultTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.resultSender {
+  font-size: calc(14px * var(--font-size-scale));
+  font-weight: 600;
+  color: #fff;
+}
+
+.resultTime {
+  font-size: calc(12px * var(--font-size-scale));
+  color: #666;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.resultText {
+  font-size: calc(14px * var(--font-size-scale));
+  color: #aaa;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.highlight {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.35);
+  color: var(--on-accent, #fff);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  fill: none;
+  stroke: var(--accent-solid);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: searchWobble 2s infinite ease-in-out;
+}
+
+@keyframes searchWobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-10deg) scale(1.1); }
+  50% { transform: rotate(0deg) scale(1); }
+  75% { transform: rotate(10deg) scale(1.1); }
+}
+
+.emptyText {
+  font-size: calc(14px * var(--font-size-scale));
+  color: #555;
+}

@@ -1,0 +1,55 @@
+.description {
+  color: #8e8e93;
+  font-size: calc(14px * var(--font-size-scale));
+  margin-bottom: 24px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.option {
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: calc(16px * var(--font-size-scale));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.active {
+  background: rgba(255, 149, 0, 0.15);
+  border-color: #ff9500;
+}
+
+.active:hover {
+  background: rgba(255, 149, 0, 0.2);
+}
+
+.checkCircle {
+  position: absolute;
+  right: 16px;
+  width: 20px;
+  height: 20px;
+  background: #ff9500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,315 @@
+.contactItem {
+  position: relative;
+  padding: var(--density-contact-padding, 12px 15px);
+  cursor: pointer;
+  border-bottom: 1px solid var(--card);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.2s ease;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contactItem:hover {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.08);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .contactItem:active {
+    background: transparent !important;
+    transform: none;
+  }
+}
+
+.contactItem.active {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.15);
+}
+
+.contactItem.contextActive {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.25) !important;
+  box-shadow: inset 3px 0 0 var(--accent-solid);
+}
+
+.avatarBox {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--avatar-radius, 50%);
+  clip-path: var(--avatar-clip, none);
+  border: 2px solid #333;
+  flex-shrink: 0;
+  transition: border-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.avatarClip {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--avatar-radius, 50%);
+  clip-path: var(--avatar-clip, none);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--avatar-radius, 50%);
+  clip-path: var(--avatar-clip, none);
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--avatar-radius, 50%);
+  clip-path: var(--avatar-clip, none);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(20px * var(--font-size-scale));
+  font-weight: 700;
+  color: #fff;
+}
+
+.infoBox {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.contactName {
+  font-family: var(--font-heading);
+  font-size: calc(15px * var(--font-size-scale));
+  font-weight: 700 !important;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+
+.nameText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verifiedBadge {
+  width: 15px;
+  height: 15px;
+  fill: var(--accent-solid);
+  flex-shrink: 0;
+  margin-left: 4px;
+  display: block;
+}
+
+.secretBadge {
+  width: 15px;
+  height: 15px;
+  fill: #4caf50;
+  flex-shrink: 0;
+  margin-left: 4px;
+  margin-top: -2px;
+  display: block;
+  vertical-align: middle;
+}
+
+.secretChat {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.10), transparent 60%);
+  border-left: 3px solid #4caf50;
+}
+
+.secretChat:hover {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.18), transparent 60%);
+}
+
+.mutedIcon {
+  width: 14px;
+  height: 14px;
+  fill: #888;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.timeLabel {
+  color: #555;
+  font-size: calc(11px * var(--font-size-scale));
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.bottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preview {
+  color: #777;
+  font-size: calc(13px * var(--font-size-scale));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.previewIcon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.previewSender {
+  color: var(--accent-solid);
+}
+
+.roomTypeBadge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: calc(10px * var(--font-size-scale));
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--accent-solid);
+  background: color-mix(in srgb, var(--accent-solid) 14%, transparent);
+  white-space: nowrap;
+  vertical-align: middle;
+  position: relative;
+  top: 1.2px;
+}
+
+.previewIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 0;
+  margin-top: 4px;
+}
+
+.previewText {
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.unreadBadge {
+  background: var(--accent-solid);
+  color: var(--on-accent, #fff);
+  font-size: calc(11px * var(--font-size-scale));
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+}
+
+.mutedBadge {
+  background: var(--border, #555) !important;
+  color: var(--text-secondary, #aaa) !important;
+  box-shadow: none !important;
+}
+
+.pinIcon {
+  width: 12px;
+  height: 12px;
+  fill: var(--accent-solid);
+}
+
+.statusDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4caf50;
+  border: 2px solid var(--sidebar);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tickWrap {
+  display: inline-block;
+  position: relative;
+  width: 18px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.tickSvg {
+  position: absolute;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--accent-solid);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tickOffset {
+  left: 6px;
+}
+
+.tickSingle {
+  stroke: #888;
+  width: 14px;
+  height: 14px;
+}
+
+.searchUsername {
+  font-size: calc(12px * var(--font-size-scale));
+  color: var(--accent-solid);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}

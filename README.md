@@ -45,7 +45,7 @@ All features are free. No subscription, no limits.
 - **Client:** React 19 + TypeScript + Vite
 - **Auth:** JWT, bcryptjs
 - **Media:** Cloudinary, Sharp (EXIF stripping, image processing)
-- **Encryption:** libsodium (secret chats), Firebase Admin
+- **Encryption:** e2ee signal protocol (secret chats), aes-256-gcm
 - **Push:** Firebase Cloud Messaging / Web Push
 - **Rate limiting:** express-rate-limit
 - **Sessions:** express-session + connect-mongo
@@ -186,7 +186,7 @@ Key points: no IP storage, no connection logs, no contact sync, physical file de
 - **Клиент:** React 19 + TypeScript + Vite
 - **Авторизация:** JWT, bcryptjs
 - **Медиа:** Cloudinary, Sharp (очистка EXIF, обработка изображений)
-- **Шифрование:** libsodium (секретные чаты), Firebase Admin
+- **Шифрование:** e2ee signal protocol  (секретные чаты), aes-256-gcm
 - **Push:** Firebase Cloud Messaging / Web Push
 - **Rate limiting:** express-rate-limit
 - **Сессии:** express-session + connect-mongo

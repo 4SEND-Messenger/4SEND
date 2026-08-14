@@ -1,152 +1,289 @@
-# 4SEND — Messenger
+# 4SEND - Messenger
 
-Бесплатный и защищённый мессенджер с шифрованием данных. Чаты, передача файлов,
-секретные чаты с сквозным шифрованием (Signal-протокол), папки, горячие клавиши,
-обширная кастомизация и локализация на 20 языков.
+A messenger that requires only a username and password. No phone number. No email. No identity.
 
-> Версия: **2.0.0**
+**Live:** https://4send-messenger.hf.space
 
-## Возможности
+[English](#english) | [Русский](#русский)
 
-- 💬 Личные и групповые чаты, комнаты
-- 🔒 Секретные чаты с E2EE (протокол Signal)
-- 📁 Папки для организации чатов
-- 📦 Отправка файлов через клиент (P2P)
-- 🌐 Локализация на 20 языков (русский, английский, испанский, китайский, арабский,
-  португальянский, хинди, украинский, казахский, польский, узбекский, чешский,
-  белорусский, немецкий, французский, итальянский, японский, корейский, турецкий, персидский)
-- 🎨 Обширная кастомизация интерфейса
-- ⌨️ Горячие клавиши
-- 🗄 Экспорт данных и шифрование базы данных при хранении
-- 🔔 Push-уведомления (Firebase Cloud Messaging / Web Push)
-- 🛠 Мониторинг кэша, горячие клавиши, расширенные настройки приватности
+---
 
-## Технологии
+## English
 
-- **Backend:** Node.js, Express, Socket.IO, MongoDB (Mongoose)
-- **Frontend:** React 19 + TypeScript + Vite
-- **Шифрование:** libsodium (libsodium-wrappers), Firebase Admin
-- **Сборка/деплой:** Docker (node:20-alpine)
+### Why
 
-## Структура проекта
+Every "secure" messenger asks for your phone number. But a phone number is your real identity - tied to your passport, your carrier, your location. We removed that dependency entirely.
+
+4SEND knows nothing about you except your username. That is by design.
+
+### Features
+
+- Anonymous registration - username and password only
+- Full interface localization - 20 languages
+- Secret chats with end-to-end encryption (Signal protocol)
+- P2P client-side file transfer
+- Chat folders
+- Extensive interface customization
+- Keyboard shortcuts
+- Cache monitoring and data export
+- Database encryption at rest
+- Symmetric encryption - messages are encrypted in transit and at rest
+- No IP logging, no connection logs
+- Auto-delete messages with a timer
+- EXIF metadata stripped from all uploaded images
+- File integrity validation on transfer
+- Voice messages, video messages, P2P calls
+- Groups, rooms and channels
+- Multiple accounts on one device
+- Works on Web, Android (APK), iOS (PWA), Windows
+
+All features are free. No subscription, no limits.
+
+### Stack
+
+- **Backend:** Node.js, Express, Socket.IO, MongoDB, Mongoose
+- **Client:** React 19 + TypeScript + Vite
+- **Auth:** JWT, bcryptjs
+- **Media:** Cloudinary, Sharp (EXIF stripping, image processing)
+- **Encryption:** libsodium (secret chats), Firebase Admin
+- **Push:** Firebase Cloud Messaging / Web Push
+- **Rate limiting:** express-rate-limit
+- **Sessions:** express-session + connect-mongo
+
+### Security notes
+
+- JWT verified on every Socket.IO connection - no unauthenticated sockets
+- `sender` is always set server-side from the verified JWT - clients cannot spoof it
+- NoSQL injection protection - recursive input sanitization on all REST and Socket events
+- File uploads validated by magic bytes (file signature), not just extension
+- Link preview protected against SSRF - private IP ranges blocked, redirects disabled, strict timeouts
+- Rate limiting bound to `username`, not IP - prevents bypass via reconnects
+- Disappearing messages use both `setTimeout` and a MongoDB TTL index as fallback
+- Encryption is fail-closed - if key validation fails on startup, server does not start
+
+### Environment variables
+
+The server reads all secrets from environment variables. Never hardcode them.
+
+```
+MONGO_URI=
+JWT_SECRET=
+ENCRYPTION_KEY=        # 32 bytes as 64 hex chars
+SECURE_SALT=
+SESSION_SECRET=
+
+PORT=                  # default 7860
+NODE_ENV=
+REPORT_RECIPIENT=      # username that receives bug reports
+
+CLOUDINARY_NAME=
+CLOUDINARY_KEY=
+CLOUDINARY_SECRET=
+
+FIREBASE_SERVICE_ACCOUNT=   # JSON string of service account
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_VAPID_KEY=
+
+GEMINI_API_KEY=
+GEMINI_API_KEY_TWO=
+GEMINI_API_KEY_THREE=
+AI_AGENT=
+ANTIGRAVITY_AGENT=
+```
+
+### Running locally
+
+The project is a Node.js backend (root) plus a React client in `public/`.
+
+```bash
+# 1. backend
+npm install
+npm start            # node index.js
+
+# 2. client (React) - build so the server can serve the frontend
+cd public
+npm install
+npm run build        # outputs to public/dist, served from public/
+```
+
+Set all environment variables before starting. The server will throw on startup if `ENCRYPTION_KEY` is missing or invalid.
+
+### Project structure
 
 ```
 4SEND/
-├── index.js              # точка входа: HTTP-сервер + Socket.IO + инициализация БД
-├── app.js                # Express-приложение, middleware, подключение роутов
-├── package.json          # зависимости и скрипты бэкенда
-├── Dockerfile            # образ для деплоя
-├── config/               # загрузка секретов (JWT_SECRET, ENCRYPTION_KEY, SESSION_SECRET)
-├── constants/            # константы (PORT, MONGO_URI, допустимые расширения)
-├── models/               # Mongoose-модели
-├── routes/               # роуты (auth, users, chats, rooms, admin, upload, settings, root)
-├── services/             # сервисы (миграции, firebase и т.д.)
-├── socket/               # обработчики Socket.IO
-├── jobs/                 # фоновые задачи (автоудаление, очистка сессий, срок сообщений)
-├── middleware/           # sanitize, безопасность, botDetection, приватность
-├── utils/
-├── public/               # React-клиент (Vite)
-│   ├── index.html
-│   ├── src/              # исходники React (App.tsx, main.tsx, …)
-│   ├── public/           # статические ассеты (языки, иконки) — отдаются как есть
-│   ├── vite.config.ts
+├── index.js          # entry: HTTP server + Socket.IO + DB init
+├── app.js            # Express app, middleware, routes
+├── public/           # React (Vite) client
+│   ├── src/          # React source
+│   ├── public/       # static assets (languages, privacy.html, ...)
 │   └── package.json
-└── uploads/              # загрузки пользователей (создаётся в рантайме, в .gitignore)
+├── config/ constants/ models/ routes/
+├── services/ socket/ jobs/ middleware/ utils/
+└── uploads/          # runtime user uploads (gitignored)
 ```
 
-## Требования
+### Platform support
 
-- Node.js 20+
-- MongoDB (локально или в облаке, например MongoDB Atlas)
-- Аккаунт Firebase (опционально, для push-уведомлений)
-- Аккаунт Cloudinary (опционально, для хранения медиа)
+| Platform | Type | Notes |
+|----------|------|-------|
+| Web | PWA | Any browser |
+| Android | APK | Direct install |
+| iOS | PWA | Install via Safari |
+| Windows | Electron | .exe |
 
-## Установка и запуск
+### License
 
-### 1. Бэкенд
+ISC
+
+### Privacy policy
+
+Available at `/privacy.html` - data collection, encryption architecture, zero-knowledge design, and legal requests.
+
+Key points: no IP storage, no connection logs, no contact sync, physical file deletion on message delete.
+
+---
+
+## Русский
+
+### Зачем
+
+Каждый "безопасный" мессенджер просит ваш номер телефона. Но номер телефона - это ваша настоящая личность: привязка к паспорту, к оператору, к геолокации. Мы убрали эту зависимость полностью.
+
+4SEND не знает о вас ничего, кроме логина. Это сделано намеренно.
+
+### Возможности
+
+- Анонимная регистрация - только логин и пароль
+- Полноценная локализация интерфейса - 20 языков
+- Секретные чаты с сквозным шифрованием (протокол Signal)
+- Отправка файлов через клиент по P2P
+- Папки для чатов
+- Обширная кастомизация интерфейса
+- Горячие клавиши
+- Мониторинг кэша и экспорт данных
+- Шифрование базы данных при хранении
+- Симметричное шифрование - сообщения шифруются при передаче и хранении
+- Нет логов IP-адресов, нет логов подключений
+- Автоудаление сообщений по таймеру
+- Автоматическая очистка EXIF-метаданных из загружаемых изображений
+- Проверка целостности файлов при передаче
+- Голосовые сообщения, видеосообщения, P2P звонки
+- Группы, комнаты и каналы
+- Несколько аккаунтов на одном устройстве
+- Работает везде: Web, Android (APK), iOS (PWA), Windows
+
+Весь функционал бесплатен. Без подписки, без ограничений.
+
+### Стек
+
+- **Бэкенд:** Node.js, Express, Socket.IO, MongoDB, Mongoose
+- **Клиент:** React 19 + TypeScript + Vite
+- **Авторизация:** JWT, bcryptjs
+- **Медиа:** Cloudinary, Sharp (очистка EXIF, обработка изображений)
+- **Шифрование:** libsodium (секретные чаты), Firebase Admin
+- **Push:** Firebase Cloud Messaging / Web Push
+- **Rate limiting:** express-rate-limit
+- **Сессии:** express-session + connect-mongo
+
+### Безопасность
+
+- JWT проверяется при каждом подключении Socket.IO - неаутентифицированные сокеты не открываются
+- `sender` всегда устанавливается на сервере из верифицированного JWT - клиент не может подменить отправителя
+- Защита от NoSQL-инъекций - рекурсивная санитизация входных данных во всех REST и Socket-событиях
+- Файлы при загрузке проверяются по сигнатуре (magic bytes), а не только по расширению
+- Link preview защищён от SSRF - приватные IP-диапазоны заблокированы, редиректы отключены, строгие таймауты
+- Rate limiting привязан к `username`, а не к IP - защита от обхода через переподключения
+- Исчезающие сообщения используют и `setTimeout`, и TTL-индекс в MongoDB как резервный механизм
+- Шифрование работает fail-closed - если ключ не валидируется при старте, сервер не запускается
+
+### Переменные окружения
+
+Сервер читает все секреты из переменных окружения. Никогда не хардкодьте их.
+
+```
+MONGO_URI=
+JWT_SECRET=
+ENCRYPTION_KEY=        # 32 байта в виде 64 hex-символов
+SECURE_SALT=
+SESSION_SECRET=
+
+PORT=                  # по умолчанию 7860
+NODE_ENV=
+REPORT_RECIPIENT=      # логин, принимающий отчёты об ошибках
+
+CLOUDINARY_NAME=
+CLOUDINARY_KEY=
+CLOUDINARY_SECRET=
+
+FIREBASE_SERVICE_ACCOUNT=   # JSON строка сервисного аккаунта
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_VAPID_KEY=
+
+GEMINI_API_KEY=
+GEMINI_API_KEY_TWO=
+GEMINI_API_KEY_THREE=
+AI_AGENT=
+ANTIGRAVITY_AGENT=
+```
+
+### Запуск локально
+
+Проект состоит из Node.js-бэкенда (корень) и React-клиента в `public/`.
 
 ```bash
+# 1. бэкенд
 npm install
-cp .env.example .env   # затем заполните значения
-```
+npm start            # node index.js
 
-Обязательно задайте в `.env`:
-
-| Переменная | Назначение |
-|---|---|
-| `MONGO_URI` | строка подключения к MongoDB |
-| `JWT_SECRET` | секрет для подписи JWT (любая длинная случайная строка) |
-| `ENCRYPTION_KEY` | 32 байта в hex (ровно 64 шестнадцатеричных символа) для шифрования БД |
-
-### 2. Клиент (React)
-
-Клиент живёт в папке `public/`. Его нужно собрать, чтобы сервер отдавал готовый
-фронтенд из `public/` (после сборки результат появляется в `public/dist/`):
-
-```bash
+# 2. клиент (React) - собрать, чтобы сервер отдавал фронтенд
 cd public
 npm install
-npm run build
+npm run build        # результат в public/dist, отдаётся из public/
 ```
 
-### 3. Запуск
+Установите все переменные окружения перед запуском. Сервер упадёт при старте, если `ENCRYPTION_KEY` отсутствует или невалиден.
 
-```bash
-# из корня проекта
-npm start
+### Структура проекта
+
+```
+4SEND/
+├── index.js          # вход: HTTP-сервер + Socket.IO + инициализация БД
+├── app.js            # Express-приложение, middleware, роуты
+├── public/           # React (Vite) клиент
+│   ├── src/          # исходники React
+│   ├── public/       # статические ассеты (языки, privacy.html, ...)
+│   └── package.json
+├── config/ constants/ models/ routes/
+├── services/ socket/ jobs/ middleware/ utils/
+└── uploads/          # загрузки пользователей в рантайме (в .gitignore)
 ```
 
-Сервер слушает порт `PORT` (по умолчанию `7860`) и отдаёт собранный клиент из `public/`.
+### Поддерживаемые платформы
 
-### Режим разработки
+| Платформа | Тип | Примечание |
+|-----------|-----|------------|
+| Web | PWA | Любой браузер |
+| Android | APK | Прямая установка |
+| iOS | PWA | Установка через Safari |
+| Windows | Electron | .exe |
 
-```bash
-# терминал 1 — бэкенд
-npm start
+### Лицензия
 
-# терминал 2 — клиент (Vite dev-сервер с hot-reload)
-cd public
-npm run dev
-```
+ISC
 
-## Переменные окружения
+### Политика конфиденциальности
 
-| Переменная | Обязательная | Описание |
-|---|---|---|
-| `MONGO_URI` | ✅ | Подключение к MongoDB |
-| `JWT_SECRET` | ✅ | Секрет подписи JWT |
-| `ENCRYPTION_KEY` | ✅ | 64 hex-символа (32 байта) для шифрования БД |
-| `PORT` | ❌ | Порт (по умолчанию `7860`) |
-| `NODE_ENV` | ❌ | `production` рекомендуется в бою |
-| `SESSION_SECRET` | ❌ | Секрет сессий (иначе генерируется случайно) |
-| `SECURE_SALT` | ❌ | Соль для доп. шифрования |
-| `REPORT_RECIPIENT` | ❌ | Ник пользователя, принимающего отчёты об ошибках |
-| `FIREBASE_*` | ❌ | Конфиг Firebase (Web Push / FCM) |
-| `CLOUDINARY_*` | ❌ | Хранение медиа в Cloudinary |
-| `GEMINI_API_KEY*` / `AI_AGENT` | ❌ | AI-функции (Gemini) |
+Доступна по адресу `/privacy.html` - сбор данных, архитектура шифрования, zero-knowledge дизайн, правовые запросы.
 
-Полный список с описанием — в `.env.example`.
-
-### Настройка Firebase
-
-1. Создайте проект в Firebase Console, добавьте Web-приложение.
-2. Скопируйте поля `apiKey`, `authDomain`, `projectId`, `storageBucket`,
-   `messagingSenderId`, `appId` в соответствующие `FIREBASE_*`.
-3. В **Cloud Messaging → Web Push certificates** сгенерируйте VAPID-ключ → `FIREBASE_VAPID_KEY`.
-4. В **Service accounts → Generate new private key** скачайте JSON → весь его текст
-   вставьте в `FIREBASE_SERVICE_ACCOUNT`.
-
-## Docker
-
-```bash
-# сначала соберите клиент (см. шаг 2 выше), затем:
-docker build -t 4send .
-docker run -p 7860:7860 --env-file .env 4send
-```
-
-Образ собирает только зависимости бэкенда, поэтому клиент должен быть
-предварительно собран (`npm run build` в `public/`).
-
-## Лицензия
-
-ISC © 4SEND Team
+Ключевое: нет хранения IP, нет логов подключений, нет синхронизации контактов, физическое удаление файлов при удалении сообщения.

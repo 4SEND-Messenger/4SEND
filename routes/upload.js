@@ -12,6 +12,74 @@ const { authenticateToken } = require('../middleware/authenticateToken');
 const { uploadLimiter } = require('../constants/limits');
 const { st, detectLangReq } = require('../constants/translations');
 const { verifyUploadedFile } = require('../utils/file');
+const { spawn } = require('child_process');
+
+const ffmpegPath = (() => { try { return require('ffmpeg-static'); } catch { return null; } })();
+
+const runFfmpegStrip = (input, output) => new Promise((resolve, reject) => {
+    if (!ffmpegPath) return reject(new Error('ffmpeg unavailable'));
+    const args = ['-y', '-i', input, '-map_metadata', '-1', '-map_chapters', '-1', '-fflags', '+bitexact', '-c', 'copy', output];
+    const cp = spawn(ffmpegPath, args);
+    let err = '';
+    cp.stderr.on('data', (d) => { err += d; });
+    cp.on('error', reject);
+    cp.on('close', (code) => code === 0 ? resolve() : reject(new Error(err || ('ffmpeg exit ' + code))));
+});
+
+const sanitizeSvg = async (inputPath) => {
+    const s = await fs.promises.readFile(inputPath, 'utf8');
+    const cleaned = s
+        .replace(/<metadata[\s\S]*?<\/metadata>/gi, '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<\?xml-stylesheet[\s\S]*?\?>/gi, '')
+        .replace(/\son\w+\s*=\s*("(?:[^"]*)"|'(?:[^']*)')/gi, '')
+        .replace(/(?:href|xlink:href)\s*=\s*("javascript:[^"]*"|'javascript:[^']*')/gi, '');
+    await fs.promises.writeFile(inputPath, cleaned);
+};
+
+const processMedia = async (safePath, ext) => {
+    if (sharpExts.includes(ext)) {
+        const tempPath = safePath + '_clean.webp';
+        await sharp(safePath, { limitInputPixels: 50000000 })
+            .rotate()
+            .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toFile(tempPath);
+        await fs.promises.unlink(safePath);
+        return tempPath;
+    }
+    if (ext === '.gif') {
+        if (ffmpegPath) {
+            const tempPath = safePath + '_clean.gif';
+            try {
+                await runFfmpegStrip(safePath, tempPath);
+                await fs.promises.unlink(safePath);
+                return tempPath;
+            } catch {
+                if (fs.existsSync(tempPath)) await fs.promises.unlink(tempPath).catch(() => {});
+            }
+        }
+        return safePath;
+    }
+    if (ext === '.svg') {
+        try { await sanitizeSvg(safePath); } catch {}
+        return safePath;
+    }
+    if (extList.audio.includes(ext) || extList.video.includes(ext)) {
+        if (ffmpegPath) {
+            const tempPath = safePath + '_clean' + ext;
+            try {
+                await runFfmpegStrip(safePath, tempPath);
+                await fs.promises.unlink(safePath);
+                return tempPath;
+            } catch {
+                if (fs.existsSync(tempPath)) await fs.promises.unlink(tempPath).catch(() => {});
+            }
+        }
+        return safePath;
+    }
+    return safePath;
+};
 
 const uploadDir = path.join(os.tmpdir(), '4send_uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -44,7 +112,7 @@ const extList = {
 };
 const allowedExts = Object.values(extList).flat();
 const imgExts = extList.img;
-const sharpExts = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.tif', '.heic', '.heif'];
+const sharpExts = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.tif', '.heic', '.heif', '.ico', '.bmp'];
 
 const blockedCloudinaryExts = ['.apk', '.app', '.bat', '.bin', '.cmd', '.com', '.command', '.cpl', '.csh', '.exe', '.gadget', '.inf1', '.ins', '.inx', '.ipa', '.isu', '.job', '.jse', '.ksh', '.lnk', '.msc', '.msi', '.msp', '.mst', '.osx', '.out', '.paf', '.pif', '.prg', '.ps1', '.reg', '.rgs', '.run', '.sct', '.shb', '.shs', '.u3p', '.vb', '.vbe', '.vbs', '.vbscript', '.workflow', '.ws', '.wsf'];
 
@@ -104,20 +172,11 @@ router.post('/upload', authenticateToken, uploadLimiter, handleUploadSingle, asy
             }
         }
 
-        if (sharpExts.includes(ext)) {
-            try {
-                const tempPath = safePath + '_clean.webp';
-                await sharp(safePath, { limitInputPixels: 50000000 })
-                    .rotate()
-                    .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
-                    .webp({ quality: 80 })
-                    .toFile(tempPath);
-                await fsPromises.unlink(safePath);
-                finalPath = tempPath;
-            } catch (sharpErr) {
-                if (fs.existsSync(safePath)) await fsPromises.unlink(safePath);
-                return res.status(400).json({ error: st('Неподдерживаемый тип медиа', detectLangReq(req)) });
-            }
+        try {
+            finalPath = await processMedia(safePath, ext);
+        } catch (procErr) {
+            if (fs.existsSync(safePath)) await fsPromises.unlink(safePath);
+            return res.status(400).json({ error: st('Неподдерживаемый тип медиа', detectLangReq(req)) });
         }
 
         const uploadOpts = {
@@ -175,20 +234,11 @@ router.post('/upload-multiple', authenticateToken, uploadLimiter, handleUploadMu
                 }
             }
 
-            if (sharpExts.includes(ext)) {
-                try {
-                    const tempPath = safePath + '_clean.webp';
-                    await sharp(safePath, { limitInputPixels: 50000000 })
-                        .rotate()
-                        .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
-                        .webp({ quality: 80 })
-                        .toFile(tempPath);
-                    await fsPromises.unlink(safePath);
-                    finalPath = tempPath;
-                } catch {
-                    if (fs.existsSync(safePath)) await fsPromises.unlink(safePath);
-                    continue;
-                }
+            try {
+                finalPath = await processMedia(safePath, ext);
+            } catch {
+                if (fs.existsSync(safePath)) await fsPromises.unlink(safePath);
+                continue;
             }
 
             const uploadOpts = {

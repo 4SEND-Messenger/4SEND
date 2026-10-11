@@ -14,11 +14,26 @@ router.get('/api/get-pins/:me/:target', authenticateToken, async (req, res) => {
     }
 
     try {
-        const query = me === target
-            ? { chat_id: me, pinner_id: me }
-            : { $or: [{ chat_id: me, pinner_id: target, pin_type: 'both' }, { chat_id: target, pinner_id: me, pin_type: 'both' }, { chat_id: target, pinner_id: me, pin_type: 'me' }] };
+        let query;
+        if (me === target) {
+            query = { chat_id: me, pinner_id: me };
+        } else if (target.startsWith('room_')) {
+            query = { chat_id: target, $or: [{ pinner_id: me }, { pin_type: 'both' }] };
+        } else {
+            query = { $or: [
+                { chat_id: me, pinner_id: target, pin_type: 'both' },
+                { chat_id: target, pinner_id: me, pin_type: { $in: ['both', 'me', 'self'] } }
+            ] };
+        }
         const pins = await Pin.find(query).sort({ timestamp: -1 }).lean();
-        res.json(pins.map(p => ({ id: p.message_id, text: clarify(p.text_preview) })));
+        const seen = new Set();
+        const unique = pins.filter(p => {
+            const id = String(p.message_id);
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+        res.json(unique.map(p => ({ id: p.message_id, text: clarify(p.text_preview) })));
     } catch { res.status(500).json([]); }
 });
 

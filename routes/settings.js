@@ -44,6 +44,19 @@ router.post('/api/auto-logout', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/api/security-settings', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username }).lean();
+        if (!user) return res.status(404).json({ error: 'Not found' });
+        res.json({
+            autoLogoutDays: user.autoLogoutDays || 7,
+            autoDeleteMonths: user.autoDeleteMonths || 6
+        });
+    } catch (err) {
+        res.status(500).json({ error: "DB Error" });
+    }
+});
+
 router.post('/api/notification-repeat', authenticateToken, async (req, res) => {
     try {
         const minutes = parseInt(req.body.minutes);

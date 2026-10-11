@@ -9,7 +9,7 @@ interface CallOverlayProps {
   peerDisplay?: string;
   peerAvatar?: string;
   withVideo?: boolean;
-  signal?: { sdp?: unknown; candidate?: unknown };
+  signals?: Array<{ sdp?: unknown; candidate?: unknown }>;
   preloadedStream?: MediaStream | null;
   onAccept?: () => void;
   onClose: () => void;
@@ -43,7 +43,7 @@ const MicOffIcon = () => (
   </svg>
 );
 
-function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, preloadedStream, onAccept, onClose }: CallOverlayProps) {
+function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, preloadedStream, onAccept, onClose }: CallOverlayProps) {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -54,6 +54,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
   const [hasVideo, setHasVideo] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const localStreamRef = useRef<MediaStream | null>(null);
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
@@ -61,13 +62,31 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const remoteSetRef = useRef(false);
+  const processedSignalsRef = useRef(0);
+  const signalChainRef = useRef<Promise<void>>(Promise.resolve());
   const incomingOfferDeferredRef = useRef(false);
+  const acceptedRef = useRef(false);
+  const makingOfferRef = useRef(false);
+  const processingSdpRef = useRef(false);
   const typeRef = useRef(type);
   typeRef.current = type;
   const preloadedStreamRef = useRef(preloadedStream);
   preloadedStreamRef.current = preloadedStream;
 
   const displayName = peerDisplay || peer;
+
+  const tryPlay = (el: HTMLAudioElement | HTMLVideoElement | null) => {
+    if (!el) return;
+    el.play().catch(() => {
+      const handler = () => {
+        el.play().catch(() => {});
+        document.removeEventListener('click', handler);
+        document.removeEventListener('touchstart', handler);
+      };
+      document.addEventListener('click', handler, { once: true });
+      document.addEventListener('touchstart', handler, { once: true });
+    });
+  };
 
   const closeWithAnim = useCallback(() => {
     if (pcRef.current) {
@@ -90,16 +109,28 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
       }
     };
     pc.ontrack = (e) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = e.streams[0];
+      const stream = e.streams[0] || new MediaStream([e.track]);
+      if (e.track.kind === 'audio') {
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = stream;
+          tryPlay(remoteAudioRef.current);
+        }
+      } else if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+        tryPlay(remoteVideoRef.current);
       }
     };
     pc.onnegotiationneeded = async () => {
+      if (makingOfferRef.current || processingSdpRef.current || pc.signalingState !== 'stable') return;
+      if (typeRef.current === 'incoming' && !acceptedRef.current) return;
+      makingOfferRef.current = true;
       try {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: pc.localDescription } });
-      } catch {}
+      } catch {} finally {
+        makingOfferRef.current = false;
+      }
     };
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current!));
@@ -137,21 +168,24 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
     if (!localStreamRef.current) {
       await startLocalStream(!!withVideo);
     }
-    const pc = createPeerConnection();
-    if (localStreamRef.current) {
-      const existingKinds = new Set(pc.getSenders().map(s => s.track?.kind));
-      localStreamRef.current.getTracks().forEach(track => {
-        if (!existingKinds.has(track.kind)) {
-          pc.addTrack(track, localStreamRef.current!);
-          existingKinds.add(track.kind);
-        }
-      });
-    }
+    makingOfferRef.current = true;
     try {
+      const pc = createPeerConnection();
+      if (localStreamRef.current) {
+        const existingKinds = new Set(pc.getSenders().map(s => s.track?.kind));
+        localStreamRef.current.getTracks().forEach(track => {
+          if (!existingKinds.has(track.kind)) {
+            pc.addTrack(track, localStreamRef.current!);
+            existingKinds.add(track.kind);
+          }
+        });
+      }
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: pc.localDescription } });
-    } catch {}
+    } catch {} finally {
+      makingOfferRef.current = false;
+    }
   }, [createPeerConnection, peer, startLocalStream, withVideo]);
 
   const addMissingTracks = useCallback((pc: RTCPeerConnection) => {
@@ -177,40 +211,60 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
     if (localStreamRef.current) {
       addMissingTracks(pc);
     }
-    try {
-      if (sig.sdp && (sig.sdp as RTCSessionDescriptionInit).type) {
-        if (pc.remoteDescription) return;
-        await pc.setRemoteDescription(sig.sdp as RTCSessionDescriptionInit);
-        remoteSetRef.current = true;
-        for (const c of pendingCandidatesRef.current) {
-          await pc.addIceCandidate(c).catch(() => {});
-        }
-        pendingCandidatesRef.current = [];
-        if ((sig.sdp as RTCSessionDescriptionInit).type === 'offer') {
-          if (typeRef.current === 'incoming') {
+    if (sig.sdp && (sig.sdp as RTCSessionDescriptionInit).type) {
+      processingSdpRef.current = true;
+      try {
+        const desc = sig.sdp as RTCSessionDescriptionInit;
+        if (desc.type === 'offer') {
+          if (pc.signalingState === 'have-local-offer') {
+            await pc.setLocalDescription({ type: 'rollback' });
+          }
+          await pc.setRemoteDescription(desc);
+          remoteSetRef.current = true;
+          for (const c of pendingCandidatesRef.current) {
+            await pc.addIceCandidate(c).catch(() => {});
+          }
+          pendingCandidatesRef.current = [];
+          const needDefer = typeRef.current === 'incoming' && !acceptedRef.current;
+          if (needDefer) {
             incomingOfferDeferredRef.current = true;
           } else {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: pc.localDescription } });
           }
+        } else if (desc.type === 'answer' && pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(desc);
+          remoteSetRef.current = true;
+          for (const c of pendingCandidatesRef.current) {
+            await pc.addIceCandidate(c).catch(() => {});
+          }
+          pendingCandidatesRef.current = [];
         }
-      } else if (sig.candidate) {
-        const candidate = sig.candidate as RTCIceCandidateInit;
-        if (remoteSetRef.current) {
-          await pc.addIceCandidate(candidate).catch(() => {});
-        } else {
-          pendingCandidatesRef.current.push(candidate);
-        }
+      } catch {} finally {
+        processingSdpRef.current = false;
       }
-    } catch {}
+    } else if (sig.candidate) {
+      const candidate = sig.candidate as RTCIceCandidateInit;
+      if (remoteSetRef.current) {
+        await pc.addIceCandidate(candidate).catch(() => {});
+      } else {
+        pendingCandidatesRef.current.push(candidate);
+      }
+    }
   }, [createPeerConnection, peer, startLocalStream, withVideo]);
 
   useEffect(() => {
-    if (signal) {
-      handleRemoteSignal(signal);
+    if (!signals || signals.length === 0) return;
+    const pending = signals.slice(processedSignalsRef.current);
+    if (pending.length === 0) return;
+    processedSignalsRef.current = signals.length;
+    let chain = signalChainRef.current;
+    for (const sig of pending) {
+      chain = chain.then(() => handleRemoteSignal(sig)).catch(() => {});
     }
-  }, [signal, handleRemoteSignal]);
+    signalChainRef.current = chain;
+  }, [signals, handleRemoteSignal]);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
@@ -283,26 +337,19 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
       ringtoneRef.current.loop = false;
       ringtoneRef.current = null;
     }
+    acceptedRef.current = true;
     await startLocalStream(!!withVideo);
+    await signalChainRef.current.catch(() => {});
 
     const existingPc = pcRef.current;
-    if (incomingOfferDeferredRef.current && existingPc?.remoteDescription) {
+    if (existingPc && (incomingOfferDeferredRef.current || existingPc.signalingState === 'have-remote-offer')) {
       addMissingTracks(existingPc);
-      const answer = await existingPc.createAnswer();
-      await existingPc.setLocalDescription(answer);
-      getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: existingPc.localDescription } });
+      try {
+        const answer = await existingPc.createAnswer();
+        await existingPc.setLocalDescription(answer);
+        getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: existingPc.localDescription } });
+      } catch {}
       incomingOfferDeferredRef.current = false;
-    } else if (!existingPc && signal) {
-      createPeerConnection();
-      await handleRemoteSignal(signal);
-      const newPc = pcRef.current;
-      if (incomingOfferDeferredRef.current && newPc?.remoteDescription) {
-        addMissingTracks(newPc);
-        const answer = await newPc.createAnswer();
-        await newPc.setLocalDescription(answer);
-        getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: newPc.localDescription } });
-        incomingOfferDeferredRef.current = false;
-      }
     }
 
     const socket = getSocket();
@@ -422,7 +469,8 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signal, p
   return (
     <div className={`${styles.overlay} ${visible && !closing ? styles.overlayVisible : ''}`}>
       <div className={styles.videoContainer}>
-        <video ref={remoteVideoRef} autoPlay playsInline className={`${styles.remoteVideo} ${type === 'active' ? styles.remoteVideoVisible : ''}`} />
+        <video ref={remoteVideoRef} autoPlay playsInline muted className={`${styles.remoteVideo} ${type === 'active' ? styles.remoteVideoVisible : ''}`} />
+        <audio ref={remoteAudioRef} autoPlay />
         <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${type === 'active' && hasVideo && !videoOff ? styles.localVideoVisible : ''}`} />
       </div>
       <div className={styles.uiLayer}>

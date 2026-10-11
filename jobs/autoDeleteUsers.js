@@ -16,7 +16,9 @@ const startAutoDeleteJob = () => {
                     await nukeUserAccount(user.username);
                 }
             }
-        } catch (err) {}
+        } catch (err) {
+            console.error('[autoDeleteUsers]', err);
+        }
     }, 24 * 60 * 60 * 1000);
 };
 

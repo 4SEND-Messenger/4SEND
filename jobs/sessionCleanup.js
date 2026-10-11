@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { kickSessions } = require('../socket/kick');
 
 const startSessionCleanupJob = () => {
     setInterval(async () => {
@@ -10,13 +11,17 @@ const startSessionCleanupJob = () => {
                 const limitDays = u.autoLogoutDays || 7;
                 const limitMs = limitDays * 24 * 60 * 60 * 1000;
 
-                const validSessions = u.sessions.filter(s => (now - new Date(s.lastActive)) < limitMs);
+                const expired = u.sessions.filter(s => (now - new Date(s.lastActive)) >= limitMs);
+                if (!expired.length) continue;
 
-                if (validSessions.length !== u.sessions.length) {
-                    await User.updateOne({ _id: u._id }, { $set: { sessions: validSessions } });
-                }
+                const expiredTokens = new Set(expired.map(s => s.token));
+                const validSessions = u.sessions.filter(s => !expiredTokens.has(s.token));
+                await User.updateOne({ _id: u._id }, { $set: { sessions: validSessions } });
+                kickSessions(u.username, t => expiredTokens.has(t));
             }
-        } catch (err) {}
+        } catch (err) {
+            console.error('[sessionCleanup]', err);
+        }
     }, 60 * 60 * 1000);
 };
 

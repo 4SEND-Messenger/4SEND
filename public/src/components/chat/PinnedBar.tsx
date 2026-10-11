@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 
 interface PinnedItem {
@@ -22,7 +22,7 @@ const MEDIA_ICONS: Record<string, ReactNode> = {
   ),
   video: (
     <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }}>
-      <path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+      <path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .55-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
     </svg>
   ),
   voice: (
@@ -38,7 +38,7 @@ const MEDIA_ICONS: Record<string, ReactNode> = {
   ),
   videonote: (
     <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }}>
-      <path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+      <path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .55-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
     </svg>
   ),
   sticker: (
@@ -48,7 +48,7 @@ const MEDIA_ICONS: Record<string, ReactNode> = {
   ),
   gif: (
     <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }}>
-      <path fill="currentColor" d="M19 19H5V5h14v14zM5 3c-1.1 0-2 .9-2 2v14c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5zm6.5 10h-2v-2h2v2zm0-4h-2V7h2v2zm4 4h-2v-2h2v2zm0-4h-2V7h2v2z" />
+      <path fill="currentColor" d="M19 19H5V5h14v14zM5 3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5zm6.5 10h-2v-2h2v2zm0-4h-2V7h2v2zm4 4h-2v-2h2v2zm0-4h-2V7h2v2z" />
     </svg>
   ),
   file: (
@@ -58,9 +58,14 @@ const MEDIA_ICONS: Record<string, ReactNode> = {
   ),
 };
 
+const truncate = (s: string, n: number) => (s.length > n ? s.slice(0, n).trimEnd() + '...' : s);
+
 export default function PinnedBar({ pinnedMessage, onScrollTo, onUnpin, styles }: Props) {
   const { t } = useI18n();
   const [pinIndex, setPinIndex] = useState(0);
+  const [showList, setShowList] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
 
   const list = Array.isArray(pinnedMessage) ? pinnedMessage : (pinnedMessage ? [pinnedMessage] : []);
   const current = list[pinIndex] || null;
@@ -72,6 +77,10 @@ export default function PinnedBar({ pinnedMessage, onScrollTo, onUnpin, styles }
   }, [list.length, pinIndex]);
 
   const handleClick = useCallback(() => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
     if (!current) return;
     onScrollTo(current.id);
   }, [current, onScrollTo]);
@@ -86,20 +95,45 @@ export default function PinnedBar({ pinnedMessage, onScrollTo, onUnpin, styles }
     setPinIndex(i => (i + 1) % list.length);
   }, [list.length]);
 
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (list.length < 2 || Math.abs(dx) < 40) return;
+    suppressClickRef.current = true;
+    setPinIndex(i => (dx > 0 ? (i - 1 + list.length) % list.length : (i + 1) % list.length));
+  }, [list.length]);
+
   const mediaIcon = current?.mediaType ? MEDIA_ICONS[current.mediaType] : null;
   const displayText = current?.text || (current?.mediaType ? t('Медиа') : '');
+  const shortText = truncate(displayText, 160);
   const isMulti = list.length > 1;
 
   return (
     <div
       className={`${styles.pinnedBar} ${list.length === 0 ? styles.hidden : ''}`}
       onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       style={{ cursor: current ? 'pointer' : undefined }}
     >
       <div className={styles.pinnedAccent} />
       <div className={styles.pinnedContent}>
-        <div className={styles.pinnedCounter}>
+        <div
+          className={styles.pinnedCounter}
+          onClick={(e) => { e.stopPropagation(); if (isMulti) setShowList(s => !s); }}
+          style={{ cursor: isMulti ? 'pointer' : undefined }}
+        >
           {isMulti ? `${pinIndex + 1} / ${list.length} ${t('закреплённых')}` : t('Закреплённое сообщение')}
+          {isMulti && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: 6, verticalAlign: 'middle', transform: showList ? 'rotate(180deg)' : 'none' }}>
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+            </svg>
+          )}
         </div>
         <div className={styles.pinnedText}>
           {isMulti && (
@@ -109,7 +143,7 @@ export default function PinnedBar({ pinnedMessage, onScrollTo, onUnpin, styles }
           )}
           <span className={styles.pinTextInner}>
             {mediaIcon}
-            {displayText}
+            {shortText}
           </span>
           {isMulti && (
             <button className={styles.pinArrow} onClick={handleNext}>
@@ -119,6 +153,24 @@ export default function PinnedBar({ pinnedMessage, onScrollTo, onUnpin, styles }
         </div>
       </div>
       <button className={styles.pinnedClose} onClick={(e) => { e.stopPropagation(); onUnpin(current?.id || ''); }}>✕</button>
+      {showList && (
+        <div className={styles.pinnedDropdown} onClick={(e) => e.stopPropagation()}>
+          {list.map((p, i) => (
+            <button
+              key={p.id}
+              className={`${styles.pinnedDropdownItem} ${i === pinIndex ? styles.pinnedDropdownItemActive : ''}`}
+              onClick={() => {
+                setPinIndex(i);
+                setShowList(false);
+                onScrollTo(p.id);
+              }}
+            >
+              {p.mediaType && MEDIA_ICONS[p.mediaType]}
+              {truncate(p.text || (p.mediaType ? t('Медиа') : ''), 90)}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

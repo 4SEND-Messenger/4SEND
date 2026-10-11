@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/authenticateToken');
 const User = require('../models/User');
+const { kickSessions } = require('../socket/kick');
 
 router.get('/api/sessions', authenticateToken, async (req, res) => {
     try {
@@ -18,7 +19,10 @@ router.get('/api/sessions', authenticateToken, async (req, res) => {
 
 router.post('/api/sessions/revoke', authenticateToken, async (req, res) => {
     try {
-        await User.updateOne({ username: req.user.username }, { $pull: { sessions: { token: req.body.token } } });
+        const token = req.body && req.body.token;
+        if (!token) return res.status(400).json({ error: 'Invalid token' });
+        await User.updateOne({ username: req.user.username }, { $pull: { sessions: { token } } });
+        kickSessions(req.user.username, t => t === token);
         res.json({ success: true });
     } catch { res.status(500).json({ error: 'Error' }); }
 });
@@ -30,6 +34,7 @@ router.post('/api/sessions/revoke-all', authenticateToken, async (req, res) => {
             { username: req.user.username },
             { $pull: { sessions: { token: { $ne: currentToken } } } }
         );
+        kickSessions(req.user.username, t => t !== currentToken);
         res.json({ success: true });
     } catch { res.status(500).json({ error: 'Error' }); }
 });

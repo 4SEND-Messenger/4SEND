@@ -17,6 +17,8 @@ const { handleCreateRoom, handleUpdateRoom, handleJoinPublicRoom, handleRequestJ
 const { handleCallRequest, handleCallResponse, handleWebrtcSignal, handleCallEnd, cleanupCallForUser } = require('./handlers/call');
 const { handleFileOffer, handleFileAnswer, handleFileIceCandidate, handleFileCancel, handleFileComplete } = require('./handlers/fileTransfer');
 const { handleE2EEInit, handleE2EEAccept } = require('./handlers/e2ee');
+const User = require('../models/User');
+const { shouldUpdateLastActive } = require('../utils/lastActive');
 
 const initSocket = (server) => {
     const io = new Server(server, {
@@ -32,6 +34,16 @@ const initSocket = (server) => {
 
     io.on('connection', (socket) => {
         socket.use(createSocketRateLimiter(socket, sanitizeMongo));
+
+        socket.use((packet, nextEvent) => {
+            if (socket.username && socket.authToken && shouldUpdateLastActive(socket.username, socket.authToken)) {
+                User.updateOne(
+                    { username: socket.username, "sessions.token": socket.authToken },
+                    { $set: { "sessions.$.lastActive": new Date(), last_seen: new Date() } }
+                ).catch(() => {});
+            }
+            nextEvent();
+        });
 
         socket.on('join', (user) => handleJoin(socket, user));
         socket.on('toggle_pin', ({ user, contact }) => handleToggleAction(socket, socket.username, contact, 'pin'));

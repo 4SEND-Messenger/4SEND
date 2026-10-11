@@ -17,6 +17,7 @@
     "html5-qrcode": "^2.3.8",
     "idb": "^8.0.3",
     "libsodium-wrappers": "^0.7.14",
+    "libsodium-wrappers-sumo": "^0.8.4",
     "lucide-react": "^1.21.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",

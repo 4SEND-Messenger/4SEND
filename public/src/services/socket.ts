@@ -5,6 +5,13 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'https://4send-messenger.h
 let socketInstance: Socket | null = null;
 let pendingToken: string | null = null;
 
+const dispatchSessionExpired = () => {
+  window.dispatchEvent(new CustomEvent('4send:session-expired'));
+};
+
+const isAuthErrorMessage = (message?: string) =>
+  /Authentication error|Banned/i.test(String(message || ''));
+
 export const getSocket = (): Socket => {
   if (!socketInstance) {
     const raw = localStorage.getItem('4send_language') || 'en';
@@ -17,6 +24,34 @@ export const getSocket = (): Socket => {
       reconnectionAttempts: 10,
       reconnectionDelay: 1000
     });
+
+    socketInstance.on('session_revoked', () => dispatchSessionExpired());
+
+    socketInstance.on('connect_error', (err) => {
+      if (!isAuthErrorMessage(err?.message)) return;
+      if (!pendingToken) return;
+      void (async () => {
+        try {
+          const { resolveToken } = await import('./api');
+          const current = await resolveToken();
+          if (current && current === pendingToken) dispatchSessionExpired();
+        } catch { /* ignore */ }
+      })();
+    });
+
+    void (async () => {
+      try {
+        const { resolveToken } = await import('./api');
+        const token = await resolveToken();
+        if (token !== pendingToken) {
+          pendingToken = token;
+          if (socketInstance) {
+            socketInstance.auth = { token };
+            if (!socketInstance.connected) socketInstance.connect();
+          }
+        }
+      } catch { /* ignore */ }
+    })();
   }
   return socketInstance;
 };

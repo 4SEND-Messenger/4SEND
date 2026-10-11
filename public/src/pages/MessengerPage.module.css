@@ -742,6 +742,47 @@
   flex-shrink: 0;
 }
 
+.pinnedDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(22, 22, 32, 0.98);
+  border-bottom: 1px solid rgba(var(--accent-rgb, 167, 79, 255), 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.pinnedDropdownItem {
+  background: 0 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ddd;
+  text-align: left;
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: calc(13px * var(--font-size-scale));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pinnedDropdownItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pinnedDropdownItemActive {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.15);
+  color: #fff;
+}
+
 .chatSearchBar {
   padding: 10px 25px;
   background: var(--sidebar);

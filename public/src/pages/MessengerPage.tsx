@@ -246,7 +246,7 @@ export default function MessengerPage() {
   const [showAiRewriteModal, setShowAiRewriteModal] = useState(false);
   const [showScheduleMenu, setShowScheduleMenu] = useState(false);
   const [scheduledMinutes, setScheduledMinutes] = useState(0);
-  const [scheduledMessages, setScheduledMessages] = useState<Array<{id: string; text: string; sendAt: Date}>>([]);
+  const [scheduledMessages, setScheduledMessages] = useState<Array<{id: string; text: string; sendAt: Date; chat: string}>>([]);
   const [showScheduledList, setShowScheduledList] = useState(false);
   const [showChatAutoDelete, setShowChatAutoDelete] = useState(false);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
@@ -316,7 +316,7 @@ export default function MessengerPage() {
     peerAvatar?: string;
     withVideo?: boolean;
     duration?: number;
-    signal?: { sdp?: unknown; candidate?: unknown };
+    signals?: Array<{ sdp?: unknown; candidate?: unknown }>;
   } | null>(null);
   const callStateRef = useRef(callState);
   callStateRef.current = callState;
@@ -544,7 +544,7 @@ export default function MessengerPage() {
     if (minutes > 0 && target && messageText.trim()) {
       const id = 'sched_' + Date.now();
       const sendAt = new Date(Date.now() + minutes * 60 * 1000);
-      setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt }]);
+      setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt, chat: target }]);
       showToast(t('Сообщение запланировано на {time}', { time: sendAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
       setMessageText('');
       setCharCount(0);
@@ -557,17 +557,17 @@ export default function MessengerPage() {
     if (!el?.value) return;
     const targetDate = new Date(el.value);
     const diff = Math.floor((targetDate.getTime() - Date.now()) / 60000);
-    if (diff > 0) {
+    if (diff > 0 && target && messageText.trim()) {
       setShowSendScheduleMenu(false);
       const id = 'sched_' + Date.now();
       const sendAt = new Date(Date.now() + diff * 60 * 1000);
-      setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt }]);
+      setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt, chat: target }]);
       showToast(t('Сообщение запланировано на {time}', { time: sendAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
       setMessageText('');
       setCharCount(0);
       if (textareaRef.current) textareaRef.current.style.height = 'auto';
     }
-  }, [messageText, showToast, t]);
+  }, [target, messageText, showToast, t]);
 
   const filteredMembers = groupMemberDetails.filter(m =>
     mentionQuery !== null &&
@@ -751,9 +751,11 @@ export default function MessengerPage() {
         setUploadingMessages(prev => { const n = { ...prev }; delete n[tempId]; return n; });
         showToast(res.error || t('Ошибка загрузки'), true);
       }
-    } catch {
+    } catch (err) {
       setUploadingMessages(prev => { const n = { ...prev }; delete n[tempId]; return n; });
-      showToast(t('Ошибка загрузки'), true);
+      const srvErr = (err as { error?: string })?.error;
+      const msg = srvErr && !/Session expired|Unauthorized|Forbidden/i.test(srvErr) ? srvErr : t('Ошибка загрузки');
+      showToast(msg, true);
     }
   }, [target, me, showToast, t]);
 
@@ -886,16 +888,15 @@ export default function MessengerPage() {
       messageId: pinTargetMsg.id,
       chatId: stripSecret(target).toLowerCase(),
       pinnerId: meLower,
-      type: forAll ? 'both' : 'self',
+      type: forAll ? 'both' : 'me',
       textPreview,
     });
     const text = mediaType ? getPinnedMediaLabel(mediaType, t) : (pinTargetMsg.text || '');
     setPinnedMessage(prev => {
-      const exists = prev.some(p => p.id === pinTargetMsg.id);
-      if (exists) return prev;
-      return [{ text, id: pinTargetMsg.id, mediaType }, ...prev];
+      const next = [{ text, id: pinTargetMsg.id, mediaType }, ...prev.filter(p => p.id !== pinTargetMsg.id)];
+      cachePin(target.toLowerCase(), next);
+      return next;
     });
-    cachePin(target.toLowerCase(), [{ text, id: pinTargetMsg.id, mediaType }]);
     setShowPinConfirm(false);
     setPinTargetMsg(null);
     showToast(t('Сообщение закреплено'), 'success');
@@ -1055,6 +1056,8 @@ export default function MessengerPage() {
     prevTargetRef.current = newTarget;
 
     setTarget(newTarget);
+    setShowProfileModal(false);
+    setProfileData(null);
     if (window.innerWidth <= 768) {
       window.history.pushState({ chatOpen: true }, '');
     }
@@ -2021,7 +2024,7 @@ export default function MessengerPage() {
       if (!data?.answer) return;
       if (data.answer === 'accepted') {
         if (callStateRef.current?.type === 'outgoing') {
-          setCallState(prev => prev ? { ...prev, type: 'active', signal: undefined } : null);
+          setCallState(prev => prev ? { ...prev, type: 'active' } : null);
         }
       } else if (data.answer === 'rejected' || data.answer === 'busy') {
         if (callStateRef.current?.type === 'outgoing') {
@@ -2048,7 +2051,7 @@ export default function MessengerPage() {
       if (!data?.signal) return;
       const peer = (callStateRef.current?.peer || '').toLowerCase();
       if (data.sender.toLowerCase() !== peer) return;
-      setCallState(prev => prev ? { ...prev, signal: data.signal } : null);
+      setCallState(prev => prev ? { ...prev, signals: [...(prev.signals || []), data.signal] } : null);
     };
 
     const onFileOffer = (data: { sender: string; fileName: string; fileSize: number; sdp: any }) => {
@@ -2162,6 +2165,8 @@ export default function MessengerPage() {
         setTarget(null);
         prevTargetRef.current = null;
         setShowScrollBtn(false);
+        setShowProfileModal(false);
+        setProfileData(null);
       }
     };
     window.addEventListener('popstate', onPop);
@@ -2283,16 +2288,19 @@ export default function MessengerPage() {
   }, [showConfetti]);
 
   useEffect(() => {
-    if (scheduledMessages.length === 0 || !target) return;
+    if (scheduledMessages.length === 0 || !me) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     scheduledMessages.forEach(sched => {
-      const delay = sched.sendAt.getTime() - Date.now();
+      const chat = sched.chat;
+      if (!chat) return;
+      const sendAt = sched.sendAt instanceof Date ? sched.sendAt : new Date(sched.sendAt);
+      const delay = sendAt.getTime() - Date.now();
       const doSend = async () => {
         const socket = getSocket();
-        const e2eeFields = target.startsWith(SECRET_PREFIX) ? await prepareOutgoing(sched.text, target) : {};
-        socket.emit('chat_message', { sender: me, receiver: stripSecret(target), text: e2eeFields.is_encrypted ? '' : sched.text, timestamp: new Date().toISOString(), ...e2eeFields });
+        const e2eeFields = chat.startsWith(SECRET_PREFIX) ? await prepareOutgoing(sched.text, chat) : {};
+        socket.emit('chat_message', { sender: me, receiver: stripSecret(chat), text: e2eeFields.is_encrypted ? '' : sched.text, timestamp: new Date().toISOString(), ...e2eeFields });
         setScheduledMessages(prev => prev.filter(m => m.id !== sched.id));
-        if (delay > 0) loadChats();
+        loadChats();
       };
       if (delay <= 0) {
         doSend();
@@ -2302,7 +2310,24 @@ export default function MessengerPage() {
       }
     });
     return () => timers.forEach(t => clearTimeout(t));
-  }, [scheduledMessages, target, me, loadChats]);
+  }, [scheduledMessages, me, loadChats]);
+
+  useEffect(() => {
+    try { localStorage.setItem('4send_scheduled', JSON.stringify(scheduledMessages)); } catch {}
+  }, [scheduledMessages]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('4send_scheduled');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setScheduledMessages(parsed
+          .filter((m: { id?: string; text?: string; sendAt?: string; chat?: string }) => m && m.id && m.text && m.sendAt && m.chat)
+          .map((m: { id: string; text: string; sendAt: string; chat: string }) => ({ id: m.id, text: m.text, sendAt: new Date(m.sendAt), chat: m.chat })));
+      }
+    } catch {}
+  }, []);
 
   const searchMessages = useMessageSearch(messages);
 
@@ -2610,7 +2635,7 @@ export default function MessengerPage() {
                 contacts={contacts}
                 onlineUsers={onlineUsers}
                 multiSelectMode={multiSelectMode}
-                onBack={() => { if (window.innerWidth <= 768 && window.history.state?.chatOpen) { window.history.back(); } else { setTarget(null); prevTargetRef.current = null; } }}
+                onBack={() => { if (window.innerWidth <= 768 && window.history.state?.chatOpen) { window.history.back(); } else { setTarget(null); prevTargetRef.current = null; setShowProfileModal(false); setProfileData(null); } }}
                 onProfileOpen={() => {
                   if (target) {
                     const realTarget = stripSecret(target);
@@ -2722,6 +2747,21 @@ export default function MessengerPage() {
               <div className={styles.replyText}>{replyText}</div>
             </div>
             <button className={styles.replyClose} onClick={() => { setReplyText(null); setReplyMsgId(null); }}>✕</button>
+          </div>
+        )}
+
+        {chatSelected && scheduledMessages.length > 0 && (
+          <div
+            onClick={() => setShowScheduledList(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, margin: '4px 12px 0', padding: '6px 10px',
+              borderRadius: 12, cursor: 'pointer', background: 'rgba(167,79,255,0.12)',
+              border: '1px solid rgba(167,79,255,0.3)', color: 'var(--accent-solid)', fontSize: 13, fontWeight: 600,
+              width: 'fit-content', maxWidth: 'calc(100% - 24px)'
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ flexShrink: 0 }}><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('Отложенные сообщения')} · {scheduledMessages.length}</span>
           </div>
         )}
 
@@ -3309,7 +3349,7 @@ export default function MessengerPage() {
         setIsRecordingLocked(false);
         if (!target) return;
         const isVideo = mode === 'video';
-        const ext = isVideo ? 'mp4' : 'webm';
+        const ext = isVideo ? (blob.type.includes('mp4') ? 'mp4' : 'webm') : 'webm';
         const fileName = isVideo ? `video_${Date.now()}.${ext}` : 'voice.webm';
         const displayName = isVideo ? t('Видеосообщение') : t('Голосовое сообщение');
         const tempId = 'upload_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -3325,7 +3365,7 @@ export default function MessengerPage() {
             const socket = getSocket();
             const e2eeFields = await prepareOutgoing('', stripSecret(target));
             socket.emit('chat_message', {
-              sender: me, receiver: stripSecret(target), text: '', fileUrl: res.url, isAudio: !isVideo, isVideo, fileName, timestamp: new Date().toISOString(),
+              sender: me, receiver: stripSecret(target), text: '', fileUrl: res.url, isAudio: !isVideo, isVideoNote: isVideo, fileName, timestamp: new Date().toISOString(),
               ...(timerSeconds > 0 && { expires_at: new Date(Date.now() + timerSeconds * 1000).toISOString() }),
               tempId,
               ...e2eeFields,
@@ -3389,6 +3429,15 @@ export default function MessengerPage() {
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
               <span>{t('Запланировать сообщение')}</span>
             </div>
+            {scheduledMessages.length > 0 && (
+              <div
+                className={styles.sendOption}
+                onClick={() => { setShowSendOptions(false); setShowScheduledList(true); }}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-.5 15H11v-6h.5v6zm5-2H11v-1.5h5.5V15z"/></svg>
+                <span>{t('Отложенные сообщения')} ({scheduledMessages.length})</span>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -3577,7 +3626,7 @@ export default function MessengerPage() {
         if (minutes > 0 && target && messageText.trim()) {
           const id = 'sched_' + Date.now();
           const sendAt = new Date(Date.now() + minutes * 60 * 1000);
-          setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt }]);
+          setScheduledMessages(prev => [...prev, { id, text: messageText.trim(), sendAt, chat: target }]);
       showToast(t('Сообщение запланировано на {time}', { time: sendAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
           setMessageText('');
           setCharCount(0);
@@ -3645,13 +3694,13 @@ export default function MessengerPage() {
         onChanged={() => { setActiveFolderId(prev => prev); setFolderVersion(v => v + 1); }}
       />
       {showProfileModal && profileData && (
-        <ProfileModal username={profileData.username} displayName={profileData.displayName} avatar={profileData.avatar} bio={profileData.bio} lastSeen={profileData.lastSeen} isOnline={profileData.isOnline} isVerified={profileData.isVerified} isBlocked={isChatBlocked} isRoom={profileData.isRoom} roomType={profileData.roomType} roomDescription={profileData.roomDescription} onClose={() => setShowProfileModal(false)} onDeleteChat={() => setDeleteChatTarget({ username: target || '', name: chatName || target || '' })} onPrivacyChange={(type, state) => { if (type === 'copy') setCopyRestricted(state); }} onGoToMessage={(msgId) => { setShowProfileModal(false); setTimeout(() => handleScrollToReply(msgId), 50); }} onEditProfile={() => setShowSettingsModal(true)} onRoomSettings={() => { setShowProfileModal(false); setShowRoomSettings(true); }} />
+        <ProfileModal key={profileData.username} username={profileData.username} displayName={profileData.displayName} avatar={profileData.avatar} bio={profileData.bio} lastSeen={profileData.lastSeen} isOnline={profileData.isOnline} isVerified={profileData.isVerified} isBlocked={isChatBlocked} isRoom={profileData.isRoom} roomType={profileData.roomType} roomDescription={profileData.roomDescription} onClose={() => { setShowProfileModal(false); setProfileData(null); }} onDeleteChat={() => setDeleteChatTarget({ username: target || '', name: chatName || target || '' })} onPrivacyChange={(type, state) => { if (type === 'copy') setCopyRestricted(state); }} onGoToMessage={(msgId) => { setShowProfileModal(false); setProfileData(null); setTimeout(() => handleScrollToReply(msgId), 50); }} onEditProfile={() => setShowSettingsModal(true)} onRoomSettings={() => { setShowProfileModal(false); setProfileData(null); setShowRoomSettings(true); }} />
       )}
       {showRoomSettings && target && (
         <RoomSettingsModal isOpen={showRoomSettings} onClose={() => setShowRoomSettings(false)} roomId={target} roomName={chatName} roomAvatar={chatAvatar} roomDescription={roomDescription} roomType={profileData?.roomType || 'group'} isPublic={roomIsPublic} publicLink={roomPublicLink} members={groupMembers.length > 0 ? groupMembers : [me || '']} memberDetails={groupMemberDetails} isAdmin={isGroupAdmin} currentUser={me || ''} />
       )}
       {showMediaEditor && (
-        <MediaEditor isOpen={showMediaEditor} onClose={() => { setShowMediaEditor(false); setMediaEditorFile(null); }} file={mediaEditorFile} onSend={(blob, caption) => { setShowMediaEditor(false); setMediaEditorFile(null); handleSendFromPreview(new File([blob], 'edited', { type: blob.type }), caption); }} />
+        <MediaEditor isOpen={showMediaEditor} onClose={() => { setShowMediaEditor(false); setMediaEditorFile(null); }} file={mediaEditorFile} onSend={(blob, caption) => { const origName = mediaEditorFile?.name; setShowMediaEditor(false); setMediaEditorFile(null); const mimeExt = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg'); const finalName = origName && origName.includes('.') ? origName : `photo_${Date.now()}.${mimeExt}`; handleSendFromPreview(new File([blob], finalName, { type: blob.type }), caption); }} />
       )}
       {showDeleteAccount && (
         <DeleteAccountModal isOpen={showDeleteAccount} onClose={() => setShowDeleteAccount(false)} />
@@ -3666,9 +3715,9 @@ export default function MessengerPage() {
           peerDisplay={callState.peerDisplay}
           peerAvatar={callState.peerAvatar}
           withVideo={callState.withVideo}
-          signal={callState.signal}
+          signals={callState.signals}
           preloadedStream={preloadedStreamRef.current}
-          onAccept={() => setCallState(prev => prev ? { ...prev, type: 'active', signal: undefined } : null)}
+          onAccept={() => setCallState(prev => prev ? { ...prev, type: 'active' } : null)}
           onClose={() => { preloadedStreamRef.current = null; setCallState(null); }}
         />
       )}

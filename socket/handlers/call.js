@@ -60,8 +60,8 @@ const handleCallResponse = async (socket, data) => {
     io.to(data.target).emit('call_answered', { answer: data.answer });
     const key = `${caller}_${receiver}`;
     if (callTimeouts.has(key)) { clearTimeout(callTimeouts.get(key)); callTimeouts.delete(key); }
-    activeCalls.delete(caller);
     if (data.answer === 'rejected' || data.answer === 'busy') {
+        activeCalls.delete(caller);
         try {
             const dialogId = getDialogId(caller, receiver);
             const ts = new Date();

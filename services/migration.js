@@ -73,6 +73,31 @@ const runMigration = async () => {
 
 if (!global.privacyMap) global.privacyMap = new Map();
 
+const dedupPins = async () => {
+    try {
+        const Pin = require('../models/Pin');
+        await Pin.updateMany({ pin_type: 'self' }, { $set: { pin_type: 'me' } });
+
+        const dupes = await Pin.aggregate([
+            { $sort: { timestamp: -1 } },
+            { $group: {
+                _id: { m: '$message_id', c: '$chat_id', p: '$pinner_id' },
+                ids: { $push: '$_id' },
+                n: { $sum: 1 }
+            } },
+            { $match: { n: { $gt: 1 } } }
+        ]);
+        const toDelete = [];
+        for (const d of dupes) toDelete.push(...d.ids.slice(1));
+        for (let i = 0; i < toDelete.length; i += 500) {
+            await Pin.deleteMany({ _id: { $in: toDelete.slice(i, i + 500) } });
+        }
+        await Pin.syncIndexes();
+    } catch (err) {
+        logError('dedup_pins', err);
+    }
+};
+
 const loadPrivacyMap = async () => {
     try {
         const users = await User.find({ privacy: { $exists: true, $ne: '{}' } }).select('username privacy').lean();
@@ -82,4 +107,4 @@ const loadPrivacyMap = async () => {
     } catch (err) { logError('privacy_load', err); }
 };
 
-module.exports = { runMigration, loadPrivacyMap };
+module.exports = { runMigration, loadPrivacyMap, dedupPins };

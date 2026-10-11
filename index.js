@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = require('./app');
 const { initSocket } = require('./socket/index');
 const { PORT, MONGO_URI } = require('./constants/allowed');
-const { runMigration, loadPrivacyMap } = require('./services/migration');
+const { runMigration, loadPrivacyMap, dedupPins } = require('./services/migration');
 const { startAutoDeleteJob } = require('./jobs/autoDeleteUsers');
 const { startNotificationRepeatJob } = require('./jobs/notificationRepeat');
 const { startSessionCleanupJob } = require('./jobs/sessionCleanup');
@@ -21,6 +21,7 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
     .then(async () => {
         await runMigration();
         await loadPrivacyMap();
+        await dedupPins();
         startAutoDeleteJob();
         startNotificationRepeatJob();
         startSessionCleanupJob();

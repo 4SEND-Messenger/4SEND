@@ -687,8 +687,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       volume: getLocalStorage('4send_volume', 1),
       notificationRepeat: getLocalStorage('4send_notif_repeat', 5),
       autoLockMinutes: getLocalStorage('4send_lock_time', 0),
-      autoDeleteMonths: getLocalStorage('4send_auto_delete', 6),
-      autoLogoutDays: getLocalStorage('4send_auto_logout', 7),
+      autoDeleteMonths: getLocalStorage('4send_autoDeleteMonths', getLocalStorage('4send_auto_delete', 6)),
+      autoLogoutDays: getLocalStorage('4send_autoLogoutDays', getLocalStorage('4send_auto_logout', 7)),
       quickReaction: getLocalStorage('4send_quick_reaction', '❤️'),
       language: getLocalStorage<AppLang>('4send_language', 'ru'),
       pin: getLocalStorage('4send_pin', null),
@@ -722,6 +722,29 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => { applyCssVars(settings); }, [settings.textSize, settings.fontFamily, settings.theme, settings.bubbleRadius, settings.animationSpeed, settings.showTime, settings.showRead, settings.showEdited, settings.showTimer, settings.statusIndicator, settings.avatarStyle, settings.chatBackground, settings.messageAlignment, settings.density, settings.scrollbarWidth, settings.sidebarWidth]);
+
+  useEffect(() => {
+    if (!localStorage.getItem('4send_token')) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { api } = await import('../services/api');
+        const data = await api.get<{ autoLogoutDays?: number; autoDeleteMonths?: number }>('/api/security-settings');
+        if (cancelled || !data) return;
+        const days = [1, 7, 30, 180].includes(Number(data.autoLogoutDays)) ? Number(data.autoLogoutDays) : null;
+        const months = [3, 6, 12].includes(Number(data.autoDeleteMonths)) ? Number(data.autoDeleteMonths) : null;
+        if (days !== null) {
+          setLocalStorage('4send_autoLogoutDays', days);
+          setSettings(prev => ({ ...prev, autoLogoutDays: days }));
+        }
+        if (months !== null) {
+          setLocalStorage('4send_autoDeleteMonths', months);
+          setSettings(prev => ({ ...prev, autoDeleteMonths: months }));
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const updateSetting = useCallback(<K extends keyof SettingsContextType>(key: K, value: SettingsContextType[K]) => {
     setSettings(prev => {

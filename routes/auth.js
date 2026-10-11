@@ -111,6 +111,7 @@ router.post('/auth/logout', authenticateToken, async (req, res) => {
             { username: req.user.username },
             { $pull: { sessions: { token: req.token } } }
         );
+        require('../socket/kick').kickSessions(req.user.username, t => t === req.token);
         res.json({ success: true });
     } catch {
         res.status(500).json({ error: 'Error' });

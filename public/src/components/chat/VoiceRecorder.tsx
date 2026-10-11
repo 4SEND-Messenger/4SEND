@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useI18n } from '../../hooks/useI18n';
+import { getVideoMessageSettings, pickVideoMessageMime } from '../../utils/videoMessage';
 import styles from './VoiceRecorder.module.css';
 
 interface Props {
@@ -17,7 +18,7 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
   const [bars, setBars] = useState<number[]>(new Array(20).fill(2));
   const [closing, setClosing] = useState(false);
   const [visible, setVisible] = useState(isActive);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>(() => getVideoMessageSettings().camera);
   const [flashOn, setFlashOn] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -119,11 +120,35 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
     animateClose(() => {});
   }, [stopRecording, animateClose]);
 
-  const switchCamera = useCallback(() => {
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-    stopRecording();
-    setTimeout(() => handleStart(), 400);
-  }, []);
+  const switchCamera = useCallback(async () => {
+    const newFacing: 'user' | 'environment' = facingMode === 'user' ? 'environment' : 'user';
+    try {
+      const camStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newFacing, width: { ideal: 720 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }
+      });
+      const newTrack = camStream.getVideoTracks()[0];
+      if (!newTrack) { camStream.getTracks().forEach(t => t.stop()); return; }
+      const current = streamRef.current;
+      let targetStream = current;
+      if (current) {
+        const oldTrack = current.getVideoTracks()[0];
+        current.removeTrack(oldTrack);
+        if (oldTrack) oldTrack.stop();
+        current.addTrack(newTrack);
+      } else {
+        targetStream = camStream;
+        streamRef.current = camStream;
+      }
+      if (videoRef.current && targetStream) {
+        videoRef.current.srcObject = null;
+        videoRef.current.srcObject = targetStream;
+        await videoRef.current.play().catch(() => {});
+      }
+      setFacingMode(newFacing);
+    } catch {
+      // камера недоступна/занята — продолжаем запись на текущей, модалку не закрываем
+    }
+  }, [facingMode]);
 
   const toggleFlash = useCallback(async () => {
     setFlashOn(prev => !prev);
@@ -137,8 +162,9 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
 
   const handleStart = useCallback(async () => {
     try {
+      const videoSettings = getVideoMessageSettings();
       const constraints: MediaStreamConstraints = mode === 'video'
-        ? { audio: { echoCancellation: true, noiseSuppression: true }, video: { facingMode, width: { ideal: 720 }, height: { ideal: 720 } } }
+        ? { audio: { echoCancellation: true, noiseSuppression: true }, video: { facingMode, width: { ideal: videoSettings.quality }, height: { ideal: videoSettings.quality }, frameRate: { ideal: 30 } } }
         : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 44100 } };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -173,9 +199,9 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
         const audioTrack = stream.getAudioTracks()[0];
         if (audioTrack) canvasStream.addTrack(audioTrack);
 
-        const mime = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+        const mime = pickVideoMessageMime(videoSettings.codec);
         mimeRef.current = mime;
-        const recorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 2500000 });
+        const recorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: videoSettings.bitrate });
         mediaRecorderRef.current = recorder;
         recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
         recorder.onstop = finalizeRecording;
@@ -268,7 +294,7 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
       {mode === 'video' && (
         <>
           <div className={styles.videoPreview}>
-            <video ref={videoRef} muted playsInline className={styles.video} />
+            <video ref={videoRef} muted playsInline className={styles.video} style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }} />
           </div>
           <div className={styles.camControls}>
             <button className={styles.camBtn} onClick={toggleFlash} style={{ background: flashOn ? 'var(--accent-solid)' : undefined }}>

@@ -57,7 +57,7 @@ self.addEventListener('activate', (event) => {
 
 interface PushData {
   notification?: { title?: string; body?: string; icon?: string; click_action?: string };
-  data?: { click_action?: string; url?: string };
+  data?: Record<string, unknown> | string;
   title?: string;
   body?: string;
   icon?: string;
@@ -65,22 +65,31 @@ interface PushData {
 }
 
 self.addEventListener('push', (event: PushEvent) => {
-  let data: PushData = {};
+  let payload: PushData = {};
   try {
-    data = event.data ? event.data.json() : {};
+    payload = event.data ? event.data.json() : {};
   } catch {
-    data = { title: '4SEND', body: event.data ? event.data.text() : '' };
+    payload = { title: '4SEND', body: event.data ? event.data.text() : '' };
   }
-  const notification = data.notification || data;
-  const title = notification.title || data.title || '4SEND';
-  const body = notification.body || data.body || '';
-  const icon = notification.icon || '/ico.png';
-  const clickAction = notification.click_action || data.data?.click_action || data.data?.url || '/';
+  let nested: Record<string, any> = {};
+  if (typeof payload.data === 'string') {
+    try { nested = JSON.parse(payload.data); } catch { nested = {}; }
+  } else if (payload.data && typeof payload.data === 'object') {
+    nested = payload.data as Record<string, any>;
+  }
+  const n: Record<string, any> = payload.notification ||
+    (typeof nested.notification === 'object' && nested.notification ? nested.notification : {});
+  const pick = (...vals: unknown[]) => vals.find(v => typeof v === 'string' && v);
+  const title = String(pick(n.title, payload.title, nested.title, nested['gcm.n.title'], '4SEND'));
+  const body = String(pick(n.body, payload.body, nested.body, nested['gcm.n.body'], nested.message, '') || '');
+  const icon = String(pick(n.icon, payload.icon, nested['gcm.n.icon'], '/ico.png'));
+  const clickUrl = String(pick(nested.click_action, nested.url, payload.click_action, '/'));
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
       icon,
-      data: { url: clickAction },
+      badge: '/ico.png',
+      data: { url: clickUrl },
       tag: '4send-notification',
     })
   );

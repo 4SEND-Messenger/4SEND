@@ -58,6 +58,7 @@ const handleCallResponse = async (socket, data) => {
     if (!call || call.target !== receiver) return;
     const io = getIO();
     io.to(data.target).emit('call_answered', { answer: data.answer });
+    socket.to(receiver).emit('call_taken');
     const key = `${caller}_${receiver}`;
     if (callTimeouts.has(key)) { clearTimeout(callTimeouts.get(key)); callTimeouts.delete(key); }
     if (data.answer === 'rejected' || data.answer === 'busy') {

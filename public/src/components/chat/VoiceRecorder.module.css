@@ -48,6 +48,7 @@
   overflow: hidden;
   border: 3px solid var(--accent-solid);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
   background: #000;
 }
 
@@ -56,6 +57,46 @@
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gridOverlay i {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.gridOverlay i:nth-child(1) {
+  left: 33.33%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.gridOverlay i:nth-child(2) {
+  left: 66.66%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.gridOverlay i:nth-child(3) {
+  top: 33.33%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.gridOverlay i:nth-child(4) {
+  top: 66.66%;
+  left: 0;
+  right: 0;
+  height: 1px;
 }
 
 .camControls {

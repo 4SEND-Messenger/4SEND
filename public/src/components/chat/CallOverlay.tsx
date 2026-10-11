@@ -350,6 +350,23 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   }, [type, closeWithAnim, startLocalStream, withVideo, sendOffer]);
 
   useEffect(() => {
+    return () => {
+      if (pcRef.current) {
+        pcRef.current.close();
+        pcRef.current = null;
+      }
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+      }
+      if (preloadedStreamRef.current) {
+        preloadedStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      streamPromiseRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     if (type === 'active') {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {

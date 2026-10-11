@@ -36,6 +36,10 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
   const zoomRef = useRef(1);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
+  const [gridOn, setGridOn] = useState(false);
+  const shutterRef = useRef(true);
+  const maxDurRef = useRef(0);
+  const sendRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (isActive) {
@@ -44,6 +48,7 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
       setElapsed(0);
       setFacingMode(getVideoMessageSettings().camera);
       setFlashOn(false);
+      setGridOn(getVideoMessageSettings().gridOverlay);
       zoomRef.current = 1;
       pinchRef.current = null;
       if (videoRef.current) videoRef.current.style.transform = 'none';
@@ -144,12 +149,36 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
     animateClose(onCancel);
   }, [stopRecording, onCancel, animateClose]);
 
+  const playShutter = useCallback(() => {
+    try {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      const ac = new AC();
+      const t0 = ac.currentTime;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(950, t0);
+      osc.frequency.exponentialRampToValueAtTime(400, t0 + 0.07);
+      gain.gain.setValueAtTime(0.15, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.1);
+      setTimeout(() => { ac.close().catch(() => {}); }, 300);
+    } catch {}
+  }, []);
+
   const handleSend = useCallback(() => {
+    if (mode === 'video' && shutterRef.current) playShutter();
     pendingSendRef.current = true;
     stopRecording();
     setElapsed(0);
     animateClose(() => {});
-  }, [stopRecording, animateClose]);
+  }, [mode, stopRecording, animateClose, playShutter]);
+
+  sendRef.current = handleSend;
 
   const switchCamera = useCallback(async () => {
     const newFacing: 'user' | 'environment' = facingMode === 'user' ? 'environment' : 'user';
@@ -195,6 +224,9 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
   const handleStart = useCallback(async () => {
     try {
       const videoSettings = getVideoMessageSettings();
+      shutterRef.current = mode === 'video' ? videoSettings.shutterSound : false;
+      maxDurRef.current = mode === 'video' ? videoSettings.maxDuration : 0;
+      if (mode === 'video' && videoSettings.shutterSound) playShutter();
       const constraints: MediaStreamConstraints = mode === 'video'
         ? { audio: { echoCancellation: true, noiseSuppression: true }, video: { facingMode: videoSettings.camera, width: { ideal: videoSettings.quality }, height: { ideal: videoSettings.quality }, frameRate: { ideal: 30 } } }
         : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 44100 } };
@@ -274,13 +306,22 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
         updateBars();
       }
 
+      let secs = 0;
       timerRef.current = setInterval(() => {
-        setElapsed(prev => prev + 1);
+        secs += 1;
+        setElapsed(secs);
+        if (mode === 'video' && maxDurRef.current > 0 && secs >= maxDurRef.current) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          setTimeout(() => sendRef.current(), 20);
+        }
       }, 1000);
     } catch {
       animateClose(onCancel);
     }
-  }, [mode, isActive, onCancel, animateClose, finalizeRecording]);
+  }, [mode, isActive, onCancel, animateClose, finalizeRecording, playShutter]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -335,6 +376,11 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
             onTouchCancel={handleTouchEnd}
           >
             <video ref={videoRef} muted playsInline className={styles.video} />
+            {gridOn && (
+              <div className={styles.gridOverlay}>
+                <i /><i /><i /><i />
+              </div>
+            )}
           </div>
           <div className={styles.camControls}>
             <button className={styles.camBtn} onClick={toggleFlash} style={{ background: flashOn ? 'var(--accent-solid)' : undefined }}>

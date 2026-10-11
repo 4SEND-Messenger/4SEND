@@ -41,6 +41,38 @@ function getApp(cfg: FirebaseConfig): FirebaseApp {
   return app;
 }
 
+function waitForGesture(): Promise<void> {
+  return new Promise(resolve => {
+    const done = () => {
+      window.removeEventListener('pointerdown', done);
+      window.removeEventListener('keydown', done);
+      window.removeEventListener('click', done);
+      resolve();
+    };
+    window.addEventListener('pointerdown', done, { once: true });
+    window.addEventListener('keydown', done, { once: true });
+    window.addEventListener('click', done, { once: true });
+  });
+}
+
+async function ensurePermission(): Promise<boolean> {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  // Chrome может молча отклонить prompt, вызванный без жеста пользователя,
+  // поэтому ждём первый клик/клавишу и только потом запрашиваем разрешение.
+  // Для 'denied' тоже делаем повторную попытку: старое отклонение могло
+  // произойти без жеста, а явный отказ пользователя requestPermission вернёт мгновенно.
+  await waitForGesture();
+  try {
+    const result = await Notification.requestPermission();
+    console.log('[push] requestPermission ->', result, 'state now:', Notification.permission);
+    return result === 'granted';
+  } catch (err) {
+    console.log('[push] requestPermission threw:', err);
+    return false;
+  }
+}
+
 export async function initPush(): Promise<string | null> {
   if (initPromise) return initPromise;
   initPromise = (async () => {
@@ -50,18 +82,20 @@ export async function initPush(): Promise<string | null> {
     const cfg = await loadConfig();
     if (!cfg) return null;
     try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return null;
+      const granted = await ensurePermission();
+      if (!granted) return null;
       const firebaseApp = getApp(cfg);
       messaging = getMessaging(firebaseApp);
       const swRegistration = await navigator.serviceWorker.ready;
+      console.log('[push] sw ready:', swRegistration.active && swRegistration.active.scriptURL);
       const token = await getToken(messaging, {
         vapidKey: cfg.vapidKey,
         serviceWorkerRegistration: swRegistration,
       });
+      console.log('[push] getToken ->', token ? 'ok' : 'null');
       if (!token) return null;
       try {
-        await fetch('/api/save-push-token', {
+        const res = await fetch('/api/save-push-token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -71,9 +105,11 @@ export async function initPush(): Promise<string | null> {
           },
           body: JSON.stringify({ token }),
         });
+        if (!res.ok) console.warn('[push] save-push-token failed with', res.status);
       } catch {}
       return token;
-    } catch {
+    } catch (err) {
+      console.warn('[push] init failed:', err);
       return null;
     }
   })();

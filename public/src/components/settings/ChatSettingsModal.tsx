@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 import { isFoldersEnabled, setFoldersEnabled } from '../../utils/folders';
-import { getVideoMessageSettings, setVideoMessageSetting, type VideoMessageSettings } from '../../utils/videoMessage';
 import styles from './ChatSettingsModal.module.css';
 
 interface Props {
@@ -45,6 +44,13 @@ const menuItems = [
     iconPath: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z',
     titleKey: 'Быстрая реакция',
     subtitleKey: 'Выбор эмодзи для реакции по двойному нажатию',
+  },
+  {
+    name: 'videoMessages',
+    gradient: 'linear-gradient(135deg,#ff375f,#ff2d55)',
+    iconPath: 'M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 14v2H5V7h9v4h2v3z',
+    titleKey: 'Настройки видеосообщений',
+    subtitleKey: 'Камера, качество, звук затвора и таймеры',
   },
   {
     name: 'archive',
@@ -120,7 +126,7 @@ const sections = [
   },
   {
     titleKey: 'УПРАВЛЕНИЕ',
-    items: ['hotkeys', 'archive', 'quickReaction', 'dataStorage', 'exportData'],
+    items: ['hotkeys', 'archive', 'quickReaction', 'videoMessages', 'dataStorage', 'exportData'],
   },
   {
     titleKey: 'УВЕДОМЛЕНИЯ',
@@ -134,12 +140,6 @@ export default function ChatSettingsModal({ isOpen, onClose, onOpenSubModal }: P
   const [closing, setClosing] = useState(false);
   const [entered, setEntered] = useState(false);
   const [foldersOn, setFoldersOn] = useState(() => isFoldersEnabled());
-  const [videoOpts, setVideoOpts] = useState<VideoMessageSettings>(() => getVideoMessageSettings());
-
-  const setVideoOpt = useCallback(<K extends keyof VideoMessageSettings>(key: K, value: VideoMessageSettings[K]) => {
-    setVideoMessageSetting(key, value);
-    setVideoOpts(prev => ({ ...prev, [key]: value }));
-  }, []);
 
   const toggleFolders = useCallback(() => {
     setFoldersOn(prev => {
@@ -246,58 +246,6 @@ export default function ChatSettingsModal({ isOpen, onClose, onOpenSubModal }: P
               </div>
             </div>
           ))}
-
-          <div className={styles.sectionHeader}>{t('ВИДЕОСООБЩЕНИЯ')}</div>
-          <div className={styles.sectionGroup}>
-            <div className={styles.videoOptionRow}>
-              <span className={styles.videoOptionLabel}>{t('Камера по умолчанию')}</span>
-              <div className={styles.videoOptionBtns}>
-                {([['user', 'Передняя'], ['environment', 'Основная']] as const).map(([v, label]) => (
-                  <button
-                    key={v}
-                    className={`${styles.videoOptionBtn} ${videoOpts.camera === v ? styles.videoOptionBtnActive : ''}`}
-                    onClick={() => setVideoOpt('camera', v)}
-                  >{t(label)}</button>
-                ))}
-              </div>
-            </div>
-            <div className={styles.videoOptionRow}>
-              <span className={styles.videoOptionLabel}>{t('Качество видео')}</span>
-              <div className={styles.videoOptionBtns}>
-                {[720, 480, 360].map(q => (
-                  <button
-                    key={q}
-                    className={`${styles.videoOptionBtn} ${videoOpts.quality === q ? styles.videoOptionBtnActive : ''}`}
-                    onClick={() => setVideoOpt('quality', q)}
-                  >{q}p</button>
-                ))}
-              </div>
-            </div>
-            <div className={styles.videoOptionRow}>
-              <span className={styles.videoOptionLabel}>{t('Формат')}</span>
-              <div className={styles.videoOptionBtns}>
-                {([['mp4', 'MP4 (H.264)'], ['webm', 'WebM']] as const).map(([v, label]) => (
-                  <button
-                    key={v}
-                    className={`${styles.videoOptionBtn} ${videoOpts.codec === v ? styles.videoOptionBtnActive : ''}`}
-                    onClick={() => setVideoOpt('codec', v)}
-                  >{label}</button>
-                ))}
-              </div>
-            </div>
-            <div className={styles.videoOptionRow}>
-              <span className={styles.videoOptionLabel}>{t('Битрейт')}</span>
-              <div className={styles.videoOptionBtns}>
-                {([1500000, 2500000, 4000000] as const).map(b => (
-                  <button
-                    key={b}
-                    className={`${styles.videoOptionBtn} ${videoOpts.bitrate === b ? styles.videoOptionBtnActive : ''}`}
-                    onClick={() => setVideoOpt('bitrate', b)}
-                  >{b / 1000000} Мбит</button>
-                ))}
-              </div>
-            </div>
-          </div>
 
           <div className={styles.sectionHeader}>{t('ДОПОЛНИТЕЛЬНО')}</div>
           <div className={styles.sectionGroup}>

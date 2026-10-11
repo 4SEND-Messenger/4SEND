@@ -36,6 +36,7 @@ import HotkeysModal from '../components/settings/HotkeysModal';
 import SoundSettingsModal from '../components/settings/SoundSettingsModal';
 import NotificationRepeatModal from '../components/settings/NotificationRepeatModal';
 import QuickReactionModal from '../components/settings/QuickReactionModal';
+import VideoMessageSettingsModal from '../components/settings/VideoMessageSettingsModal';
 import LanguageModal from '../components/settings/LanguageModal';
 import SecurityModal from '../components/settings/SecurityModal';
 import PasswordModal from '../components/settings/PasswordModal';
@@ -324,6 +325,7 @@ export default function MessengerPage() {
 
   const startOutgoingCall = useCallback(async (withVideo: boolean, displayName: string, avatar?: string) => {
     if (!target) return;
+    preloadedStreamRef.current?.getTracks().forEach(t => t.stop());
     preloadedStreamRef.current = null;
     try {
       preloadedStreamRef.current = await navigator.mediaDevices.getUserMedia({
@@ -341,6 +343,7 @@ export default function MessengerPage() {
   }, []);
 
   const closeCall = useCallback(() => {
+    preloadedStreamRef.current?.getTracks().forEach(t => t.stop());
     preloadedStreamRef.current = null;
     setCallState(null);
   }, []);
@@ -2062,6 +2065,10 @@ export default function MessengerPage() {
       }
     };
 
+    const onCallTaken = () => {
+      setCallState(prev => (prev && prev.type === 'incoming') ? null : prev);
+    };
+
     const onCallError = (data: { reason?: string }) => {
       if (data?.reason === 'busy') {
         setCallState(prev => prev ? { ...prev, type: 'ended' } : null);
@@ -2120,6 +2127,7 @@ export default function MessengerPage() {
     socket.on('call_incoming', onCallIncoming);
     socket.on('call_answered', onCallAnswered);
     socket.on('call_ended', onCallEnded);
+    socket.on('call_taken', onCallTaken);
     socket.on('call_error', onCallError);
     socket.on('webrtc_signal', onWebrtcSignal);
     socket.on('file_offer', onFileOffer);
@@ -2150,6 +2158,7 @@ export default function MessengerPage() {
       socket.off('call_incoming', onCallIncoming);
       socket.off('call_answered', onCallAnswered);
       socket.off('call_ended', onCallEnded);
+      socket.off('call_taken', onCallTaken);
       socket.off('call_error', onCallError);
       socket.off('webrtc_signal', onWebrtcSignal);
       socket.off('file_offer', onFileOffer);
@@ -3294,6 +3303,7 @@ export default function MessengerPage() {
       {activeSubModal === 'sound' && <SoundSettingsModal isOpen onClose={() => setActiveSubModal(null)} />}
       {activeSubModal === 'notifRepeat' && <NotificationRepeatModal isOpen onClose={() => setActiveSubModal(null)} />}
       {activeSubModal === 'quickReaction' && <QuickReactionModal isOpen onClose={() => setActiveSubModal(null)} />}
+      {activeSubModal === 'videoMessages' && <VideoMessageSettingsModal isOpen onClose={() => setActiveSubModal(null)} />}
       {activeSubModal === 'language' && <LanguageModal isOpen onClose={() => setActiveSubModal(null)} />}
       {showSecurityModal && (
         <SecurityModal isOpen={showSecurityModal} onClose={() => setShowSecurityModal(false)} onOpenSubModal={(name) => { setShowSecurityModal(false); if (name === 'deleteAccount') { setShowDeleteAccount(true); } else { setActiveSubModal(name); } }} />

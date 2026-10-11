@@ -1,0 +1,104 @@
+.subtitle {
+  color: #8e8e93;
+  font-size: calc(13px * var(--font-size-scale));
+  text-align: center;
+  margin-bottom: 16px;
+  margin-top: -8px;
+}
+
+.group {
+  background: var(--bg-secondary, #1b1b24);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.label {
+  font-size: calc(13px * var(--font-size-scale));
+  color: #ddd;
+}
+
+.hint {
+  font-size: calc(11px * var(--font-size-scale));
+  color: #8e8e93;
+}
+
+.btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
+  color: #aaa;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: calc(12px * var(--font-size-scale));
+  transition: all 0.15s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btnActive {
+  background: rgba(var(--accent-rgb, 167, 79, 255), 0.2);
+  border-color: var(--accent-solid, #a74fff);
+  color: #fff;
+}
+
+.toggle {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: var(--accent-solid, #a74fff);
+}
+
+.toggleKnob {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(18px);
+}

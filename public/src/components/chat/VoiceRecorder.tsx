@@ -34,12 +34,19 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawFrameRef = useRef<number>(0);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const zoomRef = useRef(1);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
 
   useEffect(() => {
     if (isActive) {
       setVisible(true);
       setClosing(false);
       setElapsed(0);
+      setFacingMode(getVideoMessageSettings().camera);
+      setFlashOn(false);
+      zoomRef.current = 1;
+      pinchRef.current = null;
+      if (videoRef.current) videoRef.current.style.transform = 'none';
     }
   }, [isActive]);
 
@@ -50,11 +57,12 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
   }, [isActive, locked, onLockChange]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (pinchRef.current) return;
     swipeStartRef.current = { x: e.clientX, y: e.clientY };
   }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!swipeStartRef.current || locked) return;
+    if (!swipeStartRef.current || locked || pinchRef.current) return;
     const dy = swipeStartRef.current.y - e.clientY;
     if (dy > 50) {
       onLockChange(true);
@@ -64,6 +72,29 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
 
   const handlePointerUp = useCallback(() => {
     swipeStartRef.current = null;
+  }, []);
+
+  const touchDist = (touches: React.TouchList) =>
+    Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (mode !== 'video' || e.touches.length !== 2) return;
+    pinchRef.current = { dist: touchDist(e.touches), zoom: zoomRef.current };
+    swipeStartRef.current = null;
+  }, [mode]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (mode !== 'video' || e.touches.length !== 2 || !pinchRef.current) return;
+    const ratio = touchDist(e.touches) / (pinchRef.current.dist || 1);
+    const z = Math.min(5, Math.max(1, pinchRef.current.zoom * ratio));
+    zoomRef.current = z;
+    if (videoRef.current) {
+      videoRef.current.style.transform = z === 1 ? 'none' : `scale(${z})`;
+    }
+  }, [mode]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) pinchRef.current = null;
   }, []);
 
   const stopStream = useCallback(() => {
@@ -122,9 +153,10 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
 
   const switchCamera = useCallback(async () => {
     const newFacing: 'user' | 'environment' = facingMode === 'user' ? 'environment' : 'user';
+    const q = getVideoMessageSettings().quality;
     try {
       const camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newFacing, width: { ideal: 720 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }
+        video: { facingMode: newFacing, width: { ideal: q }, height: { ideal: q }, frameRate: { ideal: 30 } }
       });
       const newTrack = camStream.getVideoTracks()[0];
       if (!newTrack) { camStream.getTracks().forEach(t => t.stop()); return; }
@@ -164,7 +196,7 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
     try {
       const videoSettings = getVideoMessageSettings();
       const constraints: MediaStreamConstraints = mode === 'video'
-        ? { audio: { echoCancellation: true, noiseSuppression: true }, video: { facingMode, width: { ideal: videoSettings.quality }, height: { ideal: videoSettings.quality }, frameRate: { ideal: 30 } } }
+        ? { audio: { echoCancellation: true, noiseSuppression: true }, video: { facingMode: videoSettings.camera, width: { ideal: videoSettings.quality }, height: { ideal: videoSettings.quality }, frameRate: { ideal: 30 } } }
         : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 44100 } };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -177,19 +209,20 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
           await videoRef.current.play();
         }
 
+        const q = videoSettings.quality;
         const canvas = document.createElement('canvas');
-        canvas.width = 600;
-        canvas.height = 600;
+        canvas.width = q;
+        canvas.height = q;
         const ctx = canvas.getContext('2d')!;
 
         const drawFrame = () => {
           if (!isActive || !videoRef.current) return;
           const v = videoRef.current;
           if (v.readyState >= 2) {
-            const min = Math.min(v.videoWidth, v.videoHeight);
-            const sx = (v.videoWidth - min) / 2;
-            const sy = (v.videoHeight - min) / 2;
-            ctx.drawImage(v, sx, sy, min, min, 0, 0, 600, 600);
+            const side = Math.min(v.videoWidth, v.videoHeight) / zoomRef.current;
+            const sx = (v.videoWidth - side) / 2;
+            const sy = (v.videoHeight - side) / 2;
+            ctx.drawImage(v, sx, sy, side, side, 0, 0, canvas.width, canvas.height);
           }
           drawFrameRef.current = requestAnimationFrame(drawFrame);
         };
@@ -247,7 +280,7 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
     } catch {
       animateClose(onCancel);
     }
-  }, [mode, facingMode, isActive, onCancel, animateClose, finalizeRecording]);
+  }, [mode, isActive, onCancel, animateClose, finalizeRecording]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -293,8 +326,15 @@ export default function VoiceRecorder({ isActive, mode, onCancel, onSend, locked
     >
       {mode === 'video' && (
         <>
-          <div className={styles.videoPreview}>
-            <video ref={videoRef} muted playsInline className={styles.video} style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }} />
+          <div
+            className={styles.videoPreview}
+            style={{ touchAction: 'none' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
+            <video ref={videoRef} muted playsInline className={styles.video} />
           </div>
           <div className={styles.camControls}>
             <button className={styles.camBtn} onClick={toggleFlash} style={{ background: flashOn ? 'var(--accent-solid)' : undefined }}>

@@ -52,6 +52,8 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   const [videoOff, setVideoOff] = useState(false);
   const [cameraFlipped, setCameraFlipped] = useState(false);
   const [hasVideo, setHasVideo] = useState(false);
+  const [remoteHasVideo, setRemoteHasVideo] = useState(false);
+  const [connState, setConnState] = useState<string>('new');
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -68,6 +70,10 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   const acceptedRef = useRef(false);
   const makingOfferRef = useRef(false);
   const processingSdpRef = useRef(false);
+  const politeRef = useRef(true);
+  const ignoreOfferRef = useRef(false);
+  const iceRestartedRef = useRef(false);
+  const streamPromiseRef = useRef<Promise<void> | null>(null);
   const typeRef = useRef(type);
   typeRef.current = type;
   const preloadedStreamRef = useRef(preloadedStream);
@@ -102,6 +108,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   }, [onClose]);
 
   const createPeerConnection = useCallback(() => {
+    if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection(RTC_CONFIG);
     pc.onicecandidate = (e) => {
       if (e.candidate) {
@@ -116,10 +123,31 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
           tryPlay(remoteAudioRef.current);
         }
       } else if (remoteVideoRef.current) {
+        setRemoteHasVideo(true);
+        e.track.onended = () => setRemoteHasVideo(false);
+        e.track.onmute = () => setRemoteHasVideo(false);
+        e.track.onunmute = () => setRemoteHasVideo(true);
         remoteVideoRef.current.srcObject = stream;
         tryPlay(remoteVideoRef.current);
       }
     };
+    pc.oniceconnectionstatechange = () => {
+      setConnState(pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed' && !iceRestartedRef.current && !politeRef.current && pc.signalingState === 'stable') {
+        iceRestartedRef.current = true;
+        (async () => {
+          makingOfferRef.current = true;
+          try {
+            const offer = await pc.createOffer({ iceRestart: true });
+            await pc.setLocalDescription(offer);
+            getSocket().emit('webrtc_signal', { target: peer, signal: { sdp: pc.localDescription } });
+          } catch {} finally {
+            makingOfferRef.current = false;
+          }
+        })();
+      }
+    };
+    pc.onconnectionstatechange = () => setConnState(pc.connectionState);
     pc.onnegotiationneeded = async () => {
       if (makingOfferRef.current || processingSdpRef.current || pc.signalingState !== 'stable') return;
       if (typeRef.current === 'incoming' && !acceptedRef.current) return;
@@ -139,35 +167,44 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     return pc;
   }, [peer]);
 
-  const startLocalStream = useCallback(async (video = false) => {
-    if (streamStartedRef.current) return;
-    if (preloadedStreamRef.current) {
-      localStreamRef.current = preloadedStreamRef.current;
+  const startLocalStream = useCallback((video = false) => {
+    if (streamPromiseRef.current) return streamPromiseRef.current;
+    const preloaded = preloadedStreamRef.current;
+    if (preloaded) {
+      localStreamRef.current = preloaded;
       streamStartedRef.current = true;
       setHasVideo(video);
-      if (video && localVideoRef.current) {
-        localVideoRef.current.srcObject = preloadedStreamRef.current;
-      }
-      return;
+      streamPromiseRef.current = (async () => {
+        if (video && localVideoRef.current) {
+          localVideoRef.current.srcObject = preloaded;
+        }
+      })();
+      return streamPromiseRef.current;
     }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: video ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }, facingMode: 'user' } : false
-      });
-      localStreamRef.current = stream;
-      streamStartedRef.current = true;
-      setHasVideo(video);
-      if (video && localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-    } catch (e) {}
+    streamPromiseRef.current = (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: video ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }, facingMode: 'user' } : false
+        });
+        localStreamRef.current = stream;
+        streamStartedRef.current = true;
+        setHasVideo(video);
+        if (video && localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+      } catch (e) {}
+    })();
+    return streamPromiseRef.current;
   }, []);
 
   const sendOffer = useCallback(async () => {
+    if (pcRef.current) return;
     if (!localStreamRef.current) {
       await startLocalStream(!!withVideo);
     }
+    if (pcRef.current) return;
+    politeRef.current = false;
     makingOfferRef.current = true;
     try {
       const pc = createPeerConnection();
@@ -203,6 +240,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     if (!pcRef.current && sig.sdp) {
       await startLocalStream(!!withVideo);
       if (!pcRef.current) {
+        politeRef.current = true;
         createPeerConnection();
       }
     }
@@ -216,10 +254,14 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
       try {
         const desc = sig.sdp as RTCSessionDescriptionInit;
         if (desc.type === 'offer') {
+          const offerCollision = makingOfferRef.current || pc.signalingState !== 'stable';
+          ignoreOfferRef.current = offerCollision && !politeRef.current;
+          if (ignoreOfferRef.current) return;
           if (pc.signalingState === 'have-local-offer') {
             await pc.setLocalDescription({ type: 'rollback' });
           }
           await pc.setRemoteDescription(desc);
+          ignoreOfferRef.current = false;
           remoteSetRef.current = true;
           for (const c of pendingCandidatesRef.current) {
             await pc.addIceCandidate(c).catch(() => {});
@@ -235,6 +277,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
           }
         } else if (desc.type === 'answer' && pc.signalingState === 'have-local-offer') {
           await pc.setRemoteDescription(desc);
+          ignoreOfferRef.current = false;
           remoteSetRef.current = true;
           for (const c of pendingCandidatesRef.current) {
             await pc.addIceCandidate(c).catch(() => {});
@@ -245,6 +288,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
         processingSdpRef.current = false;
       }
     } else if (sig.candidate) {
+      if (ignoreOfferRef.current) return;
       const candidate = sig.candidate as RTCIceCandidateInit;
       if (remoteSetRef.current) {
         await pc.addIceCandidate(candidate).catch(() => {});
@@ -354,6 +398,8 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
 
     const socket = getSocket();
     socket.emit('call_response', { target: peer, answer: 'accepted' });
+    if (remoteAudioRef.current) tryPlay(remoteAudioRef.current);
+    if (remoteVideoRef.current) tryPlay(remoteVideoRef.current);
     onAccept?.();
   };
 
@@ -458,18 +504,23 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const connPending = connState === 'new' || connState === 'connecting' || connState === 'checking';
   const statusText = type === 'outgoing'
     ? (withVideo ? t('Видеозвонок...') : t('Звонок...'))
     : type === 'incoming'
     ? (withVideo ? t('Входящий видеозвонок') : t('Входящий звонок'))
     : type === 'active'
-    ? formatTime(callSecs)
+    ? (connState === 'failed' || connState === 'disconnected'
+        ? t('Нет соединения')
+        : connPending
+        ? t('Соединение...')
+        : formatTime(callSecs))
     : t('Звонок завершён');
 
   return (
     <div className={`${styles.overlay} ${visible && !closing ? styles.overlayVisible : ''}`}>
       <div className={styles.videoContainer}>
-        <video ref={remoteVideoRef} autoPlay playsInline muted className={`${styles.remoteVideo} ${type === 'active' ? styles.remoteVideoVisible : ''}`} />
+        <video ref={remoteVideoRef} autoPlay playsInline muted className={`${styles.remoteVideo} ${type === 'active' && remoteHasVideo ? styles.remoteVideoVisible : ''}`} />
         <audio ref={remoteAudioRef} autoPlay />
         <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${type === 'active' && hasVideo && !videoOff ? styles.localVideoVisible : ''}`} />
       </div>

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useI18n } from '../../hooks/useI18n';
-import { Lock, ArrowBack, FilledSearch, Phone, MoreVert } from '../../utils/svg';
+import { Lock, ArrowBack, FilledSearch, Phone, VideoCall, MoreVert } from '../../utils/svg';
 
 import type { ContactItem } from '../../types/user';
 
@@ -19,6 +19,7 @@ interface Props {
   onProfileOpen: () => void;
   onSearchToggle: () => void;
   onCall: (target: string, displayName: string, avatar?: string) => void;
+  onVideoCall?: (target: string, displayName: string, avatar?: string) => void;
   onMenuOpen: () => void;
   getInitial: (name: string) => string;
   styles: Record<string, string>;
@@ -28,7 +29,7 @@ interface Props {
 export default function ChatHeader({
   target, me, chatName, chatAvatar, chatVerified, chatStatus, chatStatusColor,
   contacts, onlineUsers, multiSelectMode,
-  onBack, onProfileOpen, onSearchToggle, onCall, onMenuOpen, getInitial, styles,
+  onBack, onProfileOpen, onSearchToggle, onCall, onVideoCall, onMenuOpen, getInitial, styles,
   hasE2EESession
 }: Props) {
   const { t } = useI18n();
@@ -56,6 +57,12 @@ export default function ChatHeader({
     const targetContact = contacts.find(c => c.username.toLowerCase() === target.toLowerCase());
     onCall(target, chatName || targetContact?.displayName || target, targetContact?.avatar);
   }, [target, contacts, chatName, onCall]);
+
+  const handleVideoCall = useCallback(async () => {
+    if (!target || !onVideoCall) return;
+    const targetContact = contacts.find(c => c.username.toLowerCase() === target.toLowerCase());
+    onVideoCall(target, chatName || targetContact?.displayName || target, targetContact?.avatar);
+  }, [target, contacts, chatName, onVideoCall]);
 
   const currentContact = contacts.find(c => c.username.toLowerCase() === target?.toLowerCase() || '');
 
@@ -98,9 +105,14 @@ export default function ChatHeader({
       </button>
 
       {target !== me && target !== '4send_system' && target !== '4send_help' && !currentContact?.isRoom && !target?.startsWith('secret::') && (
-        <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={handleCall}>
-          <Phone />
-        </button>
+        <>
+          <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={handleCall}>
+            <Phone />
+          </button>
+          <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={handleVideoCall}>
+            <VideoCall />
+          </button>
+        </>
       )}
       <button className={styles.controlBtn} onClick={onMenuOpen}>
         <MoreVert />

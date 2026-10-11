@@ -322,6 +322,29 @@ export default function MessengerPage() {
   callStateRef.current = callState;
   const preloadedStreamRef = useRef<MediaStream | null>(null);
 
+  const startOutgoingCall = useCallback(async (withVideo: boolean, displayName: string, avatar?: string) => {
+    if (!target) return;
+    preloadedStreamRef.current = null;
+    try {
+      preloadedStreamRef.current = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: withVideo ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }, facingMode: 'user' } : false
+      });
+    } catch (e) {}
+    setCallState({ type: 'outgoing', peer: target, peerDisplay: displayName, peerAvatar: avatar, withVideo });
+    const ringFile = Math.random() < 0.08 ? 'calling2.mp3' : 'calling.mp3';
+    getSocket().emit('call_request', { target, withVideo, ringFile });
+  }, [target]);
+
+  const acceptCall = useCallback(() => {
+    setCallState(prev => prev ? { ...prev, type: 'active' } : null);
+  }, []);
+
+  const closeCall = useCallback(() => {
+    preloadedStreamRef.current = null;
+    setCallState(null);
+  }, []);
+
   const p2p = useP2PTransfer();
   const p2pRef = useRef(p2p);
   p2pRef.current = p2p;
@@ -2005,7 +2028,7 @@ export default function MessengerPage() {
 
     const onCallIncoming = (data: { caller: string; withVideo?: boolean; ringFile?: string }) => {
       if (!data?.caller) return;
-      if (callStateRef.current) {
+      if (callStateRef.current && callStateRef.current.type !== 'ended') {
         const socket = getSocket();
         socket.emit('call_response', { target: data.caller, answer: 'busy' });
         return;
@@ -2656,7 +2679,8 @@ export default function MessengerPage() {
                   }
                 }}
                 onSearchToggle={() => { setShowSearchBar(!showSearchBar); if (showSearchBar) setChatSearchQuery(''); }}
-                onCall={async (t, displayName, avatar) => { if (target) { preloadedStreamRef.current = null; try { preloadedStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); } catch (e) {} setCallState({ type: 'outgoing', peer: target, peerDisplay: displayName, peerAvatar: avatar, withVideo: false }); const ringFile = Math.random() < 0.08 ? 'calling2.mp3' : 'calling.mp3'; const socket = getSocket(); socket.emit('call_request', { target, withVideo: false, ringFile }); } }}
+                onCall={async (t, displayName, avatar) => { await startOutgoingCall(false, displayName, avatar); }}
+                onVideoCall={async (t, displayName, avatar) => { await startOutgoingCall(true, displayName, avatar); }}
                 onMenuOpen={() => setShowChatHeaderMenu(!showChatHeaderMenu)}
                 getInitial={getInitial}
                 styles={styles}
@@ -3717,8 +3741,8 @@ export default function MessengerPage() {
           withVideo={callState.withVideo}
           signals={callState.signals}
           preloadedStream={preloadedStreamRef.current}
-          onAccept={() => setCallState(prev => prev ? { ...prev, type: 'active' } : null)}
-          onClose={() => { preloadedStreamRef.current = null; setCallState(null); }}
+          onAccept={acceptCall}
+          onClose={closeCall}
         />
       )}
       {showAiRewriteModal && (

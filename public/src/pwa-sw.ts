@@ -64,6 +64,18 @@ interface PushData {
   click_action?: string;
 }
 
+async function setWorkerBadge(count: number): Promise<void> {
+  try {
+    const nav = self.navigator as unknown as {
+      setAppBadge?: (contents?: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
+    };
+    if (typeof nav.setAppBadge !== 'function') return;
+    if (count > 0) await nav.setAppBadge(count);
+    else await nav.clearAppBadge?.();
+  } catch {}
+}
+
 self.addEventListener('push', (event: PushEvent) => {
   let payload: PushData = {};
   try {
@@ -84,15 +96,21 @@ self.addEventListener('push', (event: PushEvent) => {
   const body = String(pick(n.body, payload.body, nested.body, nested['gcm.n.body'], nested.message, '') || '');
   const icon = String(pick(n.icon, payload.icon, nested['gcm.n.icon'], '/ico.png'));
   const clickUrl = String(pick(nested.click_action, nested.url, payload.click_action, '/'));
-  event.waitUntil(
-    self.registration.showNotification(title, {
+  const chatId = typeof nested.chatId === 'string' && nested.chatId ? nested.chatId : undefined;
+  const tag = chatId ? `4send-chat-${chatId.toLowerCase()}` : '4send-notification';
+  event.waitUntil((async () => {
+    await self.registration.showNotification(title, {
       body,
       icon,
       badge: '/ico.png',
-      data: { url: clickUrl },
-      tag: '4send-notification',
-    })
-  );
+      data: { url: clickUrl, chatId },
+      tag,
+    });
+    if (nested.unread !== undefined) {
+      const num = Number(nested.unread);
+      if (Number.isFinite(num)) await setWorkerBadge(num);
+    }
+  })());
 });
 
 self.addEventListener('notificationclick', (event: NotificationEvent) => {

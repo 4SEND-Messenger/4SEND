@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { Message } from '../../types/message';
 import { useAuthContext } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -89,58 +89,88 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
   const isSent = (message.sender || '').toLowerCase() === (me || '').toLowerCase();
   const msgId = message.id || message.tempId || '';
 
-  const replySwipeRef = useRef<{ x: number; y: number; active: boolean } | null>(null);
+  const replySwipeRef = useRef<{ x: number; y: number; active: boolean; locked?: boolean } | null>(null);
   const [swipeX, setSwipeX] = useState(0);
   const swipeXRef = useRef(0);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    replySwipeRef.current = { x: touch.clientX, y: touch.clientY, active: true };
-    setSwipeX(0);
-    swipeXRef.current = 0;
-    longPressTriggeredRef.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      try { navigator.vibrate?.(40); } catch {}
-      onLongPress?.(message, touch.clientX, touch.clientY);
-    }, 500);
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const ref = replySwipeRef.current;
-    if (!ref || !ref.active) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - ref.x;
-    const dy = touch.clientY - ref.y;
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+  const swipeHandlersRef = useRef({ message, onReply, onLongPress });
+  swipeHandlersRef.current = { message, onReply, onLongPress };
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    const clearLongPress = () => {
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
       }
-    }
-    if (Math.abs(dx) > Math.abs(dy) && dx < 0) {
-      e.preventDefault();
-      const val = Math.max(dx, -80);
-      setSwipeX(val);
-      swipeXRef.current = val;
-    }
-  };
-  const handleTouchEnd = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    const ref = replySwipeRef.current;
-    replySwipeRef.current = null;
-    if (!ref || !ref.active) return;
-    if (swipeXRef.current <= -60 && !longPressTriggeredRef.current) {
-      onReply?.(message);
-      try { navigator.vibrate?.(30); } catch {}
-    }
-    setSwipeX(0);
-    swipeXRef.current = 0;
-  };
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      replySwipeRef.current = { x: touch.clientX, y: touch.clientY, active: true, locked: false };
+      setSwipeX(0);
+      swipeXRef.current = 0;
+      longPressTriggeredRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTriggeredRef.current = true;
+        try { navigator.vibrate?.(40); } catch {}
+        const h = swipeHandlersRef.current;
+        h.onLongPress?.(h.message, touch.clientX, touch.clientY);
+      }, 500);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const ref = replySwipeRef.current;
+      if (!ref || !ref.active) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      const dx = touch.clientX - ref.x;
+      const dy = touch.clientY - ref.y;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) clearLongPress();
+      if (!ref.locked && Math.abs(dx) > Math.abs(dy) && dx < 0) ref.locked = true;
+      if (ref.locked) {
+        e.preventDefault();
+        const val = Math.max(dx, -80);
+        setSwipeX(val);
+        swipeXRef.current = val;
+      }
+    };
+
+    const finish = (allowReply: boolean) => {
+      clearLongPress();
+      const ref = replySwipeRef.current;
+      replySwipeRef.current = null;
+      if (!ref || !ref.active) return;
+      if (allowReply && swipeXRef.current <= -60 && !longPressTriggeredRef.current) {
+        const h = swipeHandlersRef.current;
+        h.onReply?.(h.message);
+        try { navigator.vibrate?.(30); } catch {}
+      }
+      setSwipeX(0);
+      swipeXRef.current = 0;
+    };
+
+    const onTouchEnd = () => finish(true);
+    const onTouchCancel = () => finish(false);
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
+    return () => {
+      clearLongPress();
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchCancel);
+    };
+  }, []);
 
   const [summaries, setSummaries] = useState<Record<string, { loading: boolean; text: string; visible: boolean }>>({});
 
@@ -176,8 +206,6 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
   const handleClick = useCallback(() => {
     onClick?.(message);
   }, [message, onClick]);
-
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const handleDoubleClick = useCallback(() => {
     const socket = getSocket();
@@ -265,14 +293,11 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
         <div
           ref={wrapperRef}
           id={id}
-          className={`${styles.msgRow} ${isSelected ? styles.msgRowSelected : ''} ${multiSelectActive ? styles.selectMode : ''} ${isDeleting ? styles.msgRowDeleting : ''}`}
+          className={`${styles.msgRow} ${isSelected ? styles.msgRowSelected : ''} ${multiSelectActive ? styles.selectMode : ''} ${isDeleting ? styles.msgRowDeleting : ''} ${swipeX < 0 ? styles.msgSwiping : ''}`}
           data-id={msgId}
           onContextMenu={handleContextMenu}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           style={swipeX ? { transform: `translateX(${swipeX}px)`, transition: 'none' } : undefined}
         >
         <div className={`${styles.selectCircle} ${isSelected ? styles.selectCircleActive : ''}`}>

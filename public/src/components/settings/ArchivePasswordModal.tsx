@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '../../hooks/useI18n';
-import { api } from '../../services/api';
+import { api, apiErrorMessage } from '../../services/api';
 import ModalShell from './ModalShell';
 import styles from './ArchivePasswordModal.module.css';
 
@@ -50,8 +50,8 @@ export default function ArchivePasswordModal({ isOpen, onClose, mode }: Props) {
         localStorage.setItem('4send_archive_has_password', '1');
         onClose();
       } else setError(res.error || t('Ошибка'));
-    } catch {
-      setError(t('Ошибка сети'));
+    } catch (e) {
+      setError(apiErrorMessage(e, t('Ошибка сети')));
     } finally {
       setLoading(false);
     }
@@ -67,8 +67,8 @@ export default function ArchivePasswordModal({ isOpen, onClose, mode }: Props) {
         localStorage.removeItem('4send_archive_has_password');
         onClose();
       } else setError(res.error || t('Ошибка'));
-    } catch {
-      setError(t('Ошибка сети'));
+    } catch (e) {
+      setError(apiErrorMessage(e, t('Ошибка сети')));
     } finally {
       setLoading(false);
     }
@@ -83,8 +83,8 @@ export default function ArchivePasswordModal({ isOpen, onClose, mode }: Props) {
       if (res.success) {
         onClose();
       } else setError(res.error || t('Ошибка'));
-    } catch {
-      setError(t('Ошибка сети'));
+    } catch (e) {
+      setError(apiErrorMessage(e, t('Ошибка сети')));
     } finally {
       setLoading(false);
     }

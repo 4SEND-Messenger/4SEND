@@ -196,6 +196,10 @@
   transform: scale(1.05);
 }
 
+.activeControlBtnOn {
+  background: rgba(var(--accent-rgb), 0.45);
+}
+
 .activeControlBtn svg {
   width: 24px;
   fill: #fff;

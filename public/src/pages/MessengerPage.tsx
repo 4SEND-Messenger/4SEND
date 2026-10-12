@@ -15,6 +15,7 @@ import { downloadFile } from '../utils/download';
 import UploadingBubble from '../components/chat/UploadingBubble';
 import { getSocket } from '../services/socket';
 import { api } from '../services/api';
+import { updateAppBadge, clearChatNotifications } from '../services/push';
 import { globalLocale } from '../services/storage';
 import ContactList from '../components/sidebar/ContactList';
 import ChatSearchPanel from '../components/chat/ChatSearchPanel';
@@ -27,6 +28,7 @@ const EmojiPanel = lazy(() => import('../components/chat/EmojiPanel'));
 import DeleteChatModal from '../components/DeleteChatModal';
 import ForwardModal from '../components/chat/ForwardModal';
 import CallOverlay from '../components/chat/CallOverlay';
+import { CALL_AUDIO_CONSTRAINTS } from '../components/chat/CallOverlay';
 import { useP2PTransfer } from '../hooks/useP2PTransfer';
 import { getSharedFile } from '../utils/sharedFile';
 import P2PTransferOverlay from '../components/chat/P2PTransferOverlay';
@@ -186,7 +188,7 @@ export default function MessengerPage() {
     contacts, setContacts, updateContactPreview,
     onlineUsers, setOnlineUsers,
     showDrawer, setShowDrawer, viewingArchive, setViewingArchive,
-    unreadCounts, drafts, setDraft,
+    drafts, setDraft,
   } = useChat();
   const {
     messages, setMessages, addMessage,
@@ -329,7 +331,7 @@ export default function MessengerPage() {
     preloadedStreamRef.current = null;
     try {
       preloadedStreamRef.current = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: CALL_AUDIO_CONSTRAINTS,
         video: withVideo ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }, facingMode: 'user' } : false
       });
     } catch (e) {}
@@ -383,7 +385,12 @@ export default function MessengerPage() {
   const chatSelected = !!target;
   const meLower = (me || '').toLowerCase();
 
+  const initialScrollTargetRef = useRef<string | null>(null);
+  const initializedScrollTargetRef = useRef<string | null>(null);
+  const initialScrollFrameRef = useRef<number | null>(null);
+
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    initialScrollTargetRef.current = null;
     const val = e.target.value;
     if (val.length <= 1000) {
       setMessageText(val);
@@ -419,10 +426,6 @@ export default function MessengerPage() {
       c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
     }
   }, []);
-
-  const initialScrollTargetRef = useRef<string | null>(null);
-  const initializedScrollTargetRef = useRef<string | null>(null);
-  const initialScrollFrameRef = useRef<number | null>(null);
 
   const handleSend = useCallback(async () => {
     const text = messageText.trim();
@@ -1356,6 +1359,7 @@ export default function MessengerPage() {
     }).catch(() => {});
 
     socket.emit('mark_read', { sender: stripSecret(newTarget), receiver: me, ...(newTarget.startsWith('room_') ? { isRoom: true } : {}) });
+    clearChatNotifications(stripSecret(newTarget));
     setTimeout(() => {
       if (textareaRef.current && newTarget !== '4send_system') {
         textareaRef.current.focus();
@@ -1649,27 +1653,28 @@ export default function MessengerPage() {
     const container = msgContainerRef.current;
     const content = messagesContentRef.current;
     if (!container || !content || !target) return;
-    let nearBottom = true;
     const ro = new ResizeObserver(() => {
-      if (nearBottom || initialScrollTargetRef.current === target) {
+      if (initialScrollTargetRef.current === target) {
+        container.scrollTop = Number.MAX_SAFE_INTEGER;
+        return;
+      }
+      const { scrollHeight, scrollTop, clientHeight } = container;
+      const distFromBottom = scrollHeight - scrollTop - clientHeight;
+      const composerFocused = document.activeElement === textareaRef.current;
+      const threshold = composerFocused ? 80 : 300;
+      if (distFromBottom < threshold) {
         container.scrollTop = Number.MAX_SAFE_INTEGER;
       }
     });
     ro.observe(content);
-    const onScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      nearBottom = scrollHeight - scrollTop - clientHeight < 300;
-    };
     const releaseInitialScroll = () => {
       initialScrollTargetRef.current = null;
     };
-    container.addEventListener('scroll', onScroll, { passive: true });
     container.addEventListener('wheel', releaseInitialScroll, { passive: true });
     container.addEventListener('touchstart', releaseInitialScroll, { passive: true });
     container.addEventListener('pointerdown', releaseInitialScroll, { passive: true });
     return () => {
       ro.disconnect();
-      container.removeEventListener('scroll', onScroll);
       container.removeEventListener('wheel', releaseInitialScroll);
       container.removeEventListener('touchstart', releaseInitialScroll);
       container.removeEventListener('pointerdown', releaseInitialScroll);
@@ -1805,6 +1810,7 @@ export default function MessengerPage() {
         if (s !== myId) {
           const isRoom = r.startsWith('room_');
           socket.emit('mark_read', { sender: isRoom ? r : data.sender, receiver: me, ...(isRoom ? { isRoom: true } : {}) });
+          clearChatNotifications(isRoom ? r : data.sender);
         }
       } else {
         const chatUser = s === myId ? r : s;
@@ -2184,10 +2190,10 @@ export default function MessengerPage() {
     }
   }, [me, loadChats, isUnlocked, loadAuth]);
 
+  const totalUnread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
   useEffect(() => {
-    const total = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
-    try { navigator.setAppBadge?.(total); } catch {}
-  }, [unreadCounts]);
+    updateAppBadge(totalUnread);
+  }, [totalUnread]);
 
   useEffect(() => {
     const onPop = () => {
@@ -2852,6 +2858,7 @@ export default function MessengerPage() {
                   rows={1}
                   value={messageText}
                   onChange={handleTextChange}
+                  onFocus={() => { initialScrollTargetRef.current = null; }}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
                   enterKeyHint="send"

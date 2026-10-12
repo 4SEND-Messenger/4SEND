@@ -28,6 +28,12 @@ const RTC_CONFIG: RTCConfiguration = {
   ],
 };
 
+export const CALL_AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+
 const MicIcon = () => (
   <svg viewBox="0 0 24 24">
     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
@@ -54,9 +60,11 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   const [hasVideo, setHasVideo] = useState(false);
   const [remoteHasVideo, setRemoteHasVideo] = useState(false);
   const [connState, setConnState] = useState<string>('new');
+  const [screenSharing, setScreenSharing] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const localStreamRef = useRef<MediaStream | null>(null);
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
@@ -102,6 +110,11 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       localStreamRef.current = null;
+    }
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => track.stop());
+      screenStreamRef.current = null;
+      setScreenSharing(false);
     }
     setClosing(true);
     setTimeout(() => onClose(), 300);
@@ -184,7 +197,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     streamPromiseRef.current = (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: CALL_AUDIO_CONSTRAINTS,
           video: video ? { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }, facingMode: 'user' } : false
         });
         localStreamRef.current = stream;
@@ -453,14 +466,22 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
       setVideoOff(!tracks[0].enabled);
     } else {
       try {
+        const needAudio = localStreamRef.current.getAudioTracks().length === 0;
         const newStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: needAudio ? CALL_AUDIO_CONSTRAINTS : false,
           video: { facingMode: 'user' }
         });
         const videoTrack = newStream.getVideoTracks()[0];
+        const newAudioTracks = newStream.getAudioTracks();
+        if (needAudio && newAudioTracks[0]) {
+          localStreamRef.current.addTrack(newAudioTracks[0]);
+        } else {
+          newAudioTracks.forEach(t => t.stop());
+        }
         if (videoTrack) {
           localStreamRef.current.addTrack(videoTrack);
           if (pcRef.current) {
+            addMissingTracks(pcRef.current);
             const sender = pcRef.current.getSenders().find(s => s.track?.kind === 'video');
             if (sender) {
               await sender.replaceTrack(videoTrack);
@@ -492,14 +513,22 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     const oldTracks = localStreamRef.current.getVideoTracks();
     oldTracks.forEach(t => { localStreamRef.current?.removeTrack(t); t.stop(); });
     try {
+      const needAudio = localStreamRef.current.getAudioTracks().length === 0;
       const newStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: needAudio ? CALL_AUDIO_CONSTRAINTS : false,
         video: { facingMode: cameraFlipped ? 'user' : 'environment' }
       });
       const videoTrack = newStream.getVideoTracks()[0];
+      const newAudioTracks = newStream.getAudioTracks();
+      if (needAudio && newAudioTracks[0]) {
+        localStreamRef.current.addTrack(newAudioTracks[0]);
+      } else {
+        newAudioTracks.forEach(t => t.stop());
+      }
       if (videoTrack) {
         localStreamRef.current.addTrack(videoTrack);
         if (pcRef.current) {
+          addMissingTracks(pcRef.current);
           const sender = pcRef.current.getSenders().find(s => s.track?.kind === 'video');
           if (sender) {
             await sender.replaceTrack(videoTrack);
@@ -513,6 +542,59 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
         setCameraFlipped(!cameraFlipped);
       }
     } catch (e) {}
+  };
+
+  const stopScreenShare = async () => {
+    const display = screenStreamRef.current;
+    screenStreamRef.current = null;
+    const displayTrack = display?.getVideoTracks()[0] || null;
+    if (displayTrack) displayTrack.onended = null;
+    display?.getTracks().forEach(t => t.stop());
+    setScreenSharing(false);
+    const local = localStreamRef.current;
+    if (localVideoRef.current && local) localVideoRef.current.srcObject = local;
+    const pc = pcRef.current;
+    if (pc && displayTrack) {
+      const sender = pc.getSenders().find(s => s.track === displayTrack || s.track?.kind === 'video');
+      const camTrack = local?.getVideoTracks()[0];
+      if (sender) {
+        if (camTrack) {
+          await sender.replaceTrack(camTrack).catch(() => {});
+        } else {
+          try { pc.removeTrack(sender); } catch {}
+        }
+      }
+    }
+  };
+
+  const startScreenShare = async () => {
+    if (screenStreamRef.current) return;
+    try {
+      const display = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const track = display.getVideoTracks()[0];
+      if (!track) {
+        display.getTracks().forEach(t => t.stop());
+        return;
+      }
+      screenStreamRef.current = display;
+      track.onended = () => { void stopScreenShare(); };
+      if (localVideoRef.current) localVideoRef.current.srcObject = display;
+      const pc = pcRef.current;
+      if (pc) {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) {
+          await sender.replaceTrack(track);
+        } else {
+          pc.addTrack(track, display);
+        }
+      }
+      setScreenSharing(true);
+    } catch {}
+  };
+
+  const toggleScreenShare = () => {
+    if (screenStreamRef.current) void stopScreenShare();
+    else void startScreenShare();
   };
 
   const formatTime = (secs: number) => {
@@ -539,7 +621,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
       <div className={styles.videoContainer}>
         <video ref={remoteVideoRef} autoPlay playsInline muted className={`${styles.remoteVideo} ${type === 'active' && remoteHasVideo ? styles.remoteVideoVisible : ''}`} />
         <audio ref={remoteAudioRef} autoPlay />
-        <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${type === 'active' && hasVideo && !videoOff ? styles.localVideoVisible : ''}`} />
+        <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${type === 'active' && ((hasVideo && !videoOff) || screenSharing) ? styles.localVideoVisible : ''}`} />
       </div>
       <div className={styles.uiLayer}>
         <div className={styles.mainArea}>
@@ -579,6 +661,13 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
                   <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
                 </button>
               )}
+              <button
+                className={`${styles.activeControlBtn} ${screenSharing ? styles.activeControlBtnOn : ''}`}
+                onClick={toggleScreenShare}
+                title={screenSharing ? t('Остановить демонстрацию') : t('Демонстрация экрана')}
+              >
+                <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm15 3H5v6h14V7zm-7 .5l3 3h-1.75v2.5h-2.5V11H9l3-3.5z"/></svg>
+              </button>
               <button className={styles.activeControlBtn} onClick={toggleCallMic} title={micOff ? t('Вкл. микрофон') : t('Выкл. микрофон')}>
                 {micOff ? <MicOffIcon /> : <MicIcon />}
               </button>

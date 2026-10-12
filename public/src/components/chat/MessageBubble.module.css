@@ -29,6 +29,12 @@
   margin-bottom: var(--density-msg-gap, 14px);
   position: relative;
   transition: background 0.25s ease;
+  touch-action: pan-y;
+}
+
+.msgSwiping .msgText {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .msgRowSelected {

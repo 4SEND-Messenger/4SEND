@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useI18n } from '../../hooks/useI18n';
-import { api } from '../../services/api';
+import { api, apiErrorMessage } from '../../services/api';
 import ModalShell from './ModalShell';
 import styles from './DeleteAccountModal.module.css';
 
@@ -41,8 +41,8 @@ export default function DeleteAccountModal({ isOpen, onClose }: Props) {
       } else {
         setError(res.error || t('Ошибка'));
       }
-    } catch {
-      setError(t('Ошибка сети'));
+    } catch (e) {
+      setError(apiErrorMessage(e, t('Ошибка сети')));
     } finally {
       setLoading(false);
     }

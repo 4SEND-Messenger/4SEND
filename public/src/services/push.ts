@@ -130,3 +130,24 @@ export async function clearPushToken(): Promise<void> {
     });
   } catch {}
 }
+
+export function updateAppBadge(total: number): void {
+  try {
+    const n = Math.max(0, Math.min(9999, Math.round(total)));
+    if (typeof navigator.setAppBadge !== 'function') return;
+    if (n > 0) navigator.setAppBadge(n).catch(() => {});
+    else navigator.clearAppBadge?.().catch(() => {});
+  } catch {}
+}
+
+export async function clearChatNotifications(chatId: string): Promise<void> {
+  if (!chatId) return;
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    const reg = await navigator.serviceWorker.ready;
+    const list = await reg.getNotifications({ tag: `4send-chat-${chatId.toLowerCase()}` });
+    for (const n of list) {
+      try { n.close(); } catch {}
+    }
+  } catch {}
+}

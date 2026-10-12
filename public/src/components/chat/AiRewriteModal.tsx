@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 import { useUI } from '../../context/UIContext';
-import { api } from '../../services/api';
+import { api, apiErrorMessage } from '../../services/api';
 import type { AiRewriteResponse } from '../../types/api';
 import styles from './AiRewriteModal.module.css';
 
@@ -89,8 +89,8 @@ export default function AiRewriteModal({ isOpen, onClose, messageText, onApply }
       } else if (res.result) {
         setResult(res.result);
       }
-    } catch {
-      showToast(t('Ошибка сети'), true);
+    } catch (e) {
+      showToast(apiErrorMessage(e, t('Ошибка сети')), true);
     } finally {
       setLoading(false);
     }

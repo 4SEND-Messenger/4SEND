@@ -2,6 +2,7 @@
   display: flex;
   width: 100%;
   height: 100vh;
+  height: var(--app-height, 100dvh);
 }
 
 .sidebar {
@@ -231,7 +232,7 @@
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--accent-rgb, 167, 79, 255), 0.3) transparent;
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
 }
 
 .messagesContent {

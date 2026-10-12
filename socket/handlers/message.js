@@ -225,7 +225,26 @@ const handleChatMessage = async (socket, data) => {
             }
             pushBody = pushBody.length > 60 ? pushBody.substring(0, 60) + '...' : pushBody;
 
+            let totalUnread = 1;
+            try {
+                const rows = await Dialog.find({ [`unreadCounts.${r}`]: { $gt: 0 } })
+                    .select({ [`unreadCounts.${r}`]: 1 })
+                    .lean();
+                const sum = rows.reduce((acc, d) => {
+                    const raw = d.unreadCounts instanceof Map
+                        ? d.unreadCounts.get(r)
+                        : (d.unreadCounts && d.unreadCounts[r]);
+                    return acc + (Number(raw) || 0);
+                }, 0);
+                if (sum > 0) totalUnread = sum;
+            } catch {}
+
             const message = {
+                data: {
+                    chatId: String(s),
+                    url: '/',
+                    unread: String(totalUnread)
+                },
                 notification: {
                     title: senderUser?.displayName || s,
                     body: pushBody
@@ -235,7 +254,7 @@ const handleChatMessage = async (socket, data) => {
                 },
                 apns: {
                     payload: {
-                        aps: { sound: 'default', badge: 1 }
+                        aps: { sound: 'default', badge: totalUnread }
                     }
                 },
                 webpush: {

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useI18n } from '../../hooks/useI18n';
-import { api } from '../../services/api';
+import { api, apiErrorMessage } from '../../services/api';
 import styles from './ArchiveUnlockModal.module.css';
 
 interface Props {
@@ -72,8 +72,8 @@ export default function ArchiveUnlockModal({ isOpen, onClose, onSuccess }: Props
           onSuccess();
         }, 350);
       }
-    } catch {
-      setError(t('Ошибка сети'));
+    } catch (e) {
+      setError(apiErrorMessage(e, t('Ошибка сети')));
       setLoading(false);
     }
   }, [password, onSuccess, onClose, t]);

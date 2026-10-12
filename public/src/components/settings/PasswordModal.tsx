@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { useI18n } from '../../hooks/useI18n';
-import { api } from '../../services/api';
+import { api, apiErrorMessage } from '../../services/api';
 import ModalShell from './ModalShell';
 import styles from './SubModalInputs.module.css';
 
@@ -36,8 +36,8 @@ export default function PasswordModal({ isOpen, onClose }: Props) {
       } else {
         showToast(res.error || t('Ошибка'), true);
       }
-    } catch {
-      showToast(t('Ошибка сети'), true);
+    } catch (e) {
+      showToast(apiErrorMessage(e, t('Ошибка сети')), true);
     } finally {
       setLoading(false);
     }

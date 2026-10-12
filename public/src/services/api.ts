@@ -62,6 +62,14 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
   };
 };
 
+export function apiErrorMessage(e: unknown, fallback: string): string {
+  if (e && typeof e === 'object') {
+    const msg = (e as Record<string, unknown>).error;
+    if (typeof msg === 'string' && msg && msg !== 'Error') return msg;
+  }
+  return fallback;
+}
+
 async function handleResponse<T>(r: Response): Promise<T> {
   if (!r.ok) {
     const text = await r.text();

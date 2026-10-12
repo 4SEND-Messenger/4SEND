@@ -16,8 +16,6 @@
   border-radius: 18px;
   object-fit: cover;
   display: block;
-  background: linear-gradient(135deg, var(--accent-solid, #a74fff), #8b3dff);
-  box-shadow: 0 6px 18px rgba(167, 79, 255, 0.35);
   margin-bottom: 6px;
 }
 

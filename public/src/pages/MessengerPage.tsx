@@ -385,12 +385,7 @@ export default function MessengerPage() {
   const chatSelected = !!target;
   const meLower = (me || '').toLowerCase();
 
-  const initialScrollTargetRef = useRef<string | null>(null);
-  const initializedScrollTargetRef = useRef<string | null>(null);
-  const initialScrollFrameRef = useRef<number | null>(null);
-
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    initialScrollTargetRef.current = null;
     const val = e.target.value;
     if (val.length <= 1000) {
       setMessageText(val);
@@ -426,6 +421,10 @@ export default function MessengerPage() {
       c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
     }
   }, []);
+
+  const initialScrollTargetRef = useRef<string | null>(null);
+  const initializedScrollTargetRef = useRef<string | null>(null);
+  const initialScrollFrameRef = useRef<number | null>(null);
 
   const handleSend = useCallback(async () => {
     const text = messageText.trim();
@@ -1653,28 +1652,27 @@ export default function MessengerPage() {
     const container = msgContainerRef.current;
     const content = messagesContentRef.current;
     if (!container || !content || !target) return;
+    let nearBottom = true;
     const ro = new ResizeObserver(() => {
-      if (initialScrollTargetRef.current === target) {
-        container.scrollTop = Number.MAX_SAFE_INTEGER;
-        return;
-      }
-      const { scrollHeight, scrollTop, clientHeight } = container;
-      const distFromBottom = scrollHeight - scrollTop - clientHeight;
-      const composerFocused = document.activeElement === textareaRef.current;
-      const threshold = composerFocused ? 80 : 300;
-      if (distFromBottom < threshold) {
+      if (nearBottom || initialScrollTargetRef.current === target) {
         container.scrollTop = Number.MAX_SAFE_INTEGER;
       }
     });
     ro.observe(content);
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      nearBottom = scrollHeight - scrollTop - clientHeight < 300;
+    };
     const releaseInitialScroll = () => {
       initialScrollTargetRef.current = null;
     };
+    container.addEventListener('scroll', onScroll, { passive: true });
     container.addEventListener('wheel', releaseInitialScroll, { passive: true });
     container.addEventListener('touchstart', releaseInitialScroll, { passive: true });
     container.addEventListener('pointerdown', releaseInitialScroll, { passive: true });
     return () => {
       ro.disconnect();
+      container.removeEventListener('scroll', onScroll);
       container.removeEventListener('wheel', releaseInitialScroll);
       container.removeEventListener('touchstart', releaseInitialScroll);
       container.removeEventListener('pointerdown', releaseInitialScroll);
@@ -2751,7 +2749,6 @@ export default function MessengerPage() {
                       onReact={handleReact}
                       onOpenLightbox={(url) => setLightboxSrc(url)}
                       onScrollToReply={handleScrollToReply}
-                      onReply={handleReply}
                     />
                   </div>
                 );
@@ -2858,7 +2855,6 @@ export default function MessengerPage() {
                   rows={1}
                   value={messageText}
                   onChange={handleTextChange}
-                  onFocus={() => { initialScrollTargetRef.current = null; }}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
                   enterKeyHint="send"

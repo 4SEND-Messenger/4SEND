@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import type { Message } from '../../types/message';
 import { useAuthContext } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -39,7 +39,6 @@ interface Props {
   id?: string;
   onOpenLightbox?: (url: string) => void;
   onScrollToReply?: (replyId: string) => void;
-  onReply?: (msg: Message) => void;
   onLongPress?: (msg: Message, x: number, y: number) => void;
 }
 
@@ -81,7 +80,7 @@ function ReplyIcon({ kind }: { kind: string }) {
   }
 }
 
-function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActive, copyRestricted, onClick, onContextMenu, onDoubleClick, onReact, isHighlighted, isDeleting, isSaved, isChannel, id, onOpenLightbox, onScrollToReply, onReply, onLongPress }: Props) {
+function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActive, copyRestricted, onClick, onContextMenu, onDoubleClick, onReact, isHighlighted, isDeleting, isSaved, isChannel, id, onOpenLightbox, onScrollToReply, onLongPress }: Props) {
   const { me } = useAuthContext();
   const { quickReaction } = useSettings();
   const { t } = useI18n();
@@ -89,88 +88,35 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
   const isSent = (message.sender || '').toLowerCase() === (me || '').toLowerCase();
   const msgId = message.id || message.tempId || '';
 
-  const replySwipeRef = useRef<{ x: number; y: number; active: boolean; locked?: boolean } | null>(null);
-  const [swipeX, setSwipeX] = useState(0);
-  const swipeXRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggeredRef = useRef(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const swipeHandlersRef = useRef({ message, onReply, onLongPress });
-  swipeHandlersRef.current = { message, onReply, onLongPress };
-
-  useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-
-    const clearLongPress = () => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      if (!touch) return;
-      replySwipeRef.current = { x: touch.clientX, y: touch.clientY, active: true, locked: false };
-      setSwipeX(0);
-      swipeXRef.current = 0;
-      longPressTriggeredRef.current = false;
-      longPressTimerRef.current = setTimeout(() => {
-        longPressTriggeredRef.current = true;
-        try { navigator.vibrate?.(40); } catch {}
-        const h = swipeHandlersRef.current;
-        h.onLongPress?.(h.message, touch.clientX, touch.clientY);
-      }, 500);
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      const ref = replySwipeRef.current;
-      if (!ref || !ref.active) return;
-      const touch = e.touches[0];
-      if (!touch) return;
-      const dx = touch.clientX - ref.x;
-      const dy = touch.clientY - ref.y;
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) clearLongPress();
-      if (!ref.locked && Math.abs(dx) > Math.abs(dy) && dx < 0) ref.locked = true;
-      if (ref.locked) {
-        e.preventDefault();
-        const val = Math.max(dx, -80);
-        setSwipeX(val);
-        swipeXRef.current = val;
-      }
-    };
-
-    const finish = (allowReply: boolean) => {
-      clearLongPress();
-      const ref = replySwipeRef.current;
-      replySwipeRef.current = null;
-      if (!ref || !ref.active) return;
-      if (allowReply && swipeXRef.current <= -60 && !longPressTriggeredRef.current) {
-        const h = swipeHandlersRef.current;
-        h.onReply?.(h.message);
-        try { navigator.vibrate?.(30); } catch {}
-      }
-      setSwipeX(0);
-      swipeXRef.current = 0;
-    };
-
-    const onTouchEnd = () => finish(true);
-    const onTouchCancel = () => finish(false);
-
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
-    return () => {
-      clearLongPress();
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-      el.removeEventListener('touchcancel', onTouchCancel);
-    };
-  }, []);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    longPressTimerRef.current = setTimeout(() => {
+      try { navigator.vibrate?.(40); } catch {}
+      onLongPress?.(message, touch.clientX, touch.clientY);
+    }, 500);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const ref = touchStartRef.current;
+    if (!ref || !longPressTimerRef.current) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - ref.x;
+    const dy = touch.clientY - ref.y;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    touchStartRef.current = null;
+  };
 
   const [summaries, setSummaries] = useState<Record<string, { loading: boolean; text: string; visible: boolean }>>({});
 
@@ -206,6 +152,8 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
   const handleClick = useCallback(() => {
     onClick?.(message);
   }, [message, onClick]);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const handleDoubleClick = useCallback(() => {
     const socket = getSocket();
@@ -286,20 +234,18 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
           <div className={styles.dateBubble}>{formatDateSeparator(message.timestamp, t)}</div>
         </div>
       )}
-      <div className={styles.swipeRow}>
-        <div className={styles.replyIndicator} style={{ opacity: swipeX < -30 ? Math.min(1, (-swipeX - 30) / 30) : 0 }}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent-solid)"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" /></svg>
-        </div>
-        <div
-          ref={wrapperRef}
-          id={id}
-          className={`${styles.msgRow} ${isSelected ? styles.msgRowSelected : ''} ${multiSelectActive ? styles.selectMode : ''} ${isDeleting ? styles.msgRowDeleting : ''} ${swipeX < 0 ? styles.msgSwiping : ''}`}
-          data-id={msgId}
-          onContextMenu={handleContextMenu}
-          onClick={handleClick}
-          onDoubleClick={handleDoubleClick}
-          style={swipeX ? { transform: `translateX(${swipeX}px)`, transition: 'none' } : undefined}
-        >
+      <div
+        ref={wrapperRef}
+        id={id}
+        className={`${styles.msgRow} ${isSelected ? styles.msgRowSelected : ''} ${multiSelectActive ? styles.selectMode : ''} ${isDeleting ? styles.msgRowDeleting : ''}`}
+        data-id={msgId}
+        onContextMenu={handleContextMenu}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className={`${styles.selectCircle} ${isSelected ? styles.selectCircleActive : ''}`}>
           {isSelected ? (
             <svg viewBox="0 0 24 24" className={styles.checkIcon}><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
@@ -472,7 +418,6 @@ function MessageBubble({ message, showDateSeparator, isSelected, multiSelectActi
           <ReactionsDisplay msgId={msgId} reactions={message.reactions} me={me || ''} target={message.receiver || message.sender || ''} isSent={isSent} onReact={onReact} />
         )}
         </div>
-      </div>
       </div>
     </>
   );

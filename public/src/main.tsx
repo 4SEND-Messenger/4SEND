@@ -18,15 +18,6 @@ if (apiUrl) {
   document.head.appendChild(link);
 }
 
-const applyViewportHeight = () => {
-  const vv = window.visualViewport;
-  const h = vv ? vv.height : window.innerHeight;
-  document.documentElement.style.setProperty('--app-height', `${Math.round(h)}px`);
-};
-applyViewportHeight();
-window.visualViewport?.addEventListener('resize', applyViewportHeight);
-window.addEventListener('orientationchange', applyViewportHeight);
-
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <BrowserRouter>

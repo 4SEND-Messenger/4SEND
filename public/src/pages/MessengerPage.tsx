@@ -392,9 +392,14 @@ export default function MessengerPage() {
       setCharCount(val.length);
     }
     const ta = e.target;
+    const container = msgContainerRef.current;
+    const wasNearBottom = container ? (container.scrollHeight - container.scrollTop - container.clientHeight) < 80 : false;
     ta.style.height = 'auto';
     ta.style.height = ta.scrollHeight + 'px';
     ta.style.overflowY = ta.scrollHeight > 150 ? 'auto' : 'hidden';
+    if (container && wasNearBottom) {
+      container.scrollTop = container.scrollHeight;
+    }
     if (val.length > 0 && target) {
       setDraft(target, val);
       const socket = getSocket();

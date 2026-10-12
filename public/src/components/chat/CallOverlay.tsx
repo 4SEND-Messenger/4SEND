@@ -31,7 +31,7 @@ const RTC_CONFIG: RTCConfiguration = {
 export const CALL_AUDIO_CONSTRAINTS: MediaTrackConstraints = {
   echoCancellation: true,
   noiseSuppression: true,
-  autoGainControl: true,
+  autoGainControl: false,
 };
 
 const MicIcon = () => (
@@ -459,6 +459,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   };
 
   const toggleCallVideo = async () => {
+    if (screenSharing) return;
     if (!localStreamRef.current) return;
     const tracks = localStreamRef.current.getVideoTracks();
     if (tracks.length > 0) {
@@ -509,6 +510,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   };
 
   const flipCallCamera = async () => {
+    if (screenSharing) return;
     if (!localStreamRef.current) return;
     const oldTracks = localStreamRef.current.getVideoTracks();
     oldTracks.forEach(t => { localStreamRef.current?.removeTrack(t); t.stop(); });
@@ -569,6 +571,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
 
   const startScreenShare = async () => {
     if (screenStreamRef.current) return;
+    if (hasVideo && !videoOff) return;
     try {
       const display = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
       const track = display.getVideoTracks()[0];
@@ -615,16 +618,17 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
         ? t('Соединение...')
         : formatTime(callSecs))
     : t('Звонок завершён');
+  const mediaActive = type === 'active' && ((hasVideo && !videoOff) || screenSharing);
 
   return (
     <div className={`${styles.overlay} ${visible && !closing ? styles.overlayVisible : ''}`}>
       <div className={styles.videoContainer}>
         <video ref={remoteVideoRef} autoPlay playsInline muted className={`${styles.remoteVideo} ${type === 'active' && remoteHasVideo ? styles.remoteVideoVisible : ''}`} />
         <audio ref={remoteAudioRef} autoPlay />
-        <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${type === 'active' && ((hasVideo && !videoOff) || screenSharing) ? styles.localVideoVisible : ''}`} />
+        <video ref={localVideoRef} autoPlay playsInline muted className={`${styles.localVideo} ${mediaActive ? styles.localVideoVisible : ''}`} />
       </div>
       <div className={styles.uiLayer}>
-        <div className={styles.mainArea}>
+        <div className={`${styles.mainArea} ${mediaActive ? styles.mainAreaCompact : ''}`}>
           <div className={`${styles.avatarContainer} ${type !== 'active' ? styles.avatarPulse : ''}`}>
             {peerAvatar ? (
               <img src={peerAvatar} alt="" className={styles.avatarImg} />
@@ -653,20 +657,21 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
           )}
           {type === 'active' && (
             <>
-              <button className={styles.activeControlBtn} onClick={toggleCallVideo} title={videoOff ? t('Вкл. видео') : t('Выкл. видео')}>
+              <button className={styles.activeControlBtn} onClick={toggleCallVideo} disabled={screenSharing} title={videoOff ? t('Вкл. видео') : t('Выкл. видео')}>
                 <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
               </button>
               {hasVideo && (
-                <button className={styles.activeControlBtn} onClick={flipCallCamera} title={t('Переключить камеру')}>
+                <button className={styles.activeControlBtn} onClick={flipCallCamera} disabled={screenSharing} title={t('Переключить камеру')}>
                   <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
                 </button>
               )}
               <button
                 className={`${styles.activeControlBtn} ${screenSharing ? styles.activeControlBtnOn : ''}`}
                 onClick={toggleScreenShare}
+                disabled={hasVideo && !videoOff}
                 title={screenSharing ? t('Остановить демонстрацию') : t('Демонстрация экрана')}
               >
-                <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm15 3H5v6h14V7zm-7 .5l3 3h-1.75v2.5h-2.5V11H9l3-3.5z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M11 11h2v1.4q0 .175.15.238t.275-.063l2.225-2.225q.15-.15.15-.35t-.15-.35l-2.225-2.225q-.125-.125-.275-.062T13 7.6V9h-2q-1.25 0-2.125.875T8 12v1q0 .425.288.713T9 14t.713-.288T10 13v-1q0-.425.288-.712T11 11M2 21q-.425 0-.712-.288T1 20t.288-.712T2 19h20q.425 0 .713.288T23 20t-.288.713T22 21zm2-3q-.825 0-1.412-.587T2 16V5q0-.825.588-1.412T4 3h16q.825 0 1.413.588T22 5v11q0 .825-.587 1.413T20 18z"/></svg>
               </button>
               <button className={styles.activeControlBtn} onClick={toggleCallMic} title={micOff ? t('Вкл. микрофон') : t('Выкл. микрофон')}>
                 {micOff ? <MicOffIcon /> : <MicIcon />}

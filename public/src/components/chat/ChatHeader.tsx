@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 import { Lock, ArrowBack, FilledSearch, Phone, VideoCall, MoreVert } from '../../utils/svg';
 
@@ -33,6 +33,7 @@ export default function ChatHeader({
   hasE2EESession
 }: Props) {
   const { t } = useI18n();
+  const [showCallConfirm, setShowCallConfirm] = useState(false);
 
   const handleProfileOpen = useCallback(() => {
     if (target) {
@@ -67,6 +68,7 @@ export default function ChatHeader({
   const currentContact = contacts.find(c => c.username.toLowerCase() === target?.toLowerCase() || '');
 
   return (
+    <>
     <div className={`${styles.chatHeader} ${multiSelectMode ? styles.chatHeaderExit : ''}`}>
       <div className={styles.chatHeaderLeft}>
         <button className={styles.mobileBackBtn} onClick={onBack}>
@@ -105,18 +107,42 @@ export default function ChatHeader({
       </button>
 
       {target !== me && target !== '4send_system' && target !== '4send_help' && !currentContact?.isRoom && !target?.startsWith('secret::') && (
-        <>
-          <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={handleCall}>
-            <Phone />
-          </button>
-          <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={handleVideoCall}>
-            <VideoCall />
-          </button>
-        </>
+        <button className={styles.controlBtn} style={{ marginRight: 8 }} onClick={() => setShowCallConfirm(true)}>
+          <Phone />
+        </button>
       )}
       <button className={styles.controlBtn} onClick={onMenuOpen}>
         <MoreVert />
       </button>
     </div>
+
+    {showCallConfirm && (
+      <div className={styles.callConfirmOverlay} onClick={() => setShowCallConfirm(false)}>
+        <div className={styles.callConfirmBox} onClick={e => e.stopPropagation()}>
+          <div className={styles.callConfirmTitle}>{t('Вы действительно хотите позвонить?')}</div>
+          <button
+            className={`${styles.callConfirmBtn} ${styles.callConfirmBtnPrimary}`}
+            onClick={() => { setShowCallConfirm(false); handleCall(); }}
+          >
+            <Phone width={18} height={18} />
+            {t('Обычный звонок')}
+          </button>
+          <button
+            className={`${styles.callConfirmBtn} ${styles.callConfirmBtnPrimary}`}
+            onClick={() => { setShowCallConfirm(false); handleVideoCall(); }}
+          >
+            <VideoCall width={18} height={18} />
+            {t('Видеозвонок')}
+          </button>
+          <button
+            className={`${styles.callConfirmBtn} ${styles.callConfirmBtnGhost}`}
+            onClick={() => setShowCallConfirm(false)}
+          >
+            {t('Отмена')}
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

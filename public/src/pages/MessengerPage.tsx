@@ -319,6 +319,7 @@ export default function MessengerPage() {
     peerAvatar?: string;
     withVideo?: boolean;
     duration?: number;
+    ringFile?: string;
     signals?: Array<{ sdp?: unknown; candidate?: unknown }>;
   } | null>(null);
   const callStateRef = useRef(callState);
@@ -2051,7 +2052,8 @@ export default function MessengerPage() {
         peer: data.caller,
         peerDisplay: contact?.displayName || data.caller,
         peerAvatar: contact?.avatar,
-        withVideo: data.withVideo ?? false
+        withVideo: data.withVideo ?? false,
+        ringFile: data.ringFile
       });
     };
 
@@ -3757,6 +3759,7 @@ export default function MessengerPage() {
           peerDisplay={callState.peerDisplay}
           peerAvatar={callState.peerAvatar}
           withVideo={callState.withVideo}
+          ringFile={callState.ringFile}
           signals={callState.signals}
           preloadedStream={preloadedStreamRef.current}
           onAccept={acceptCall}

@@ -177,12 +177,25 @@
 }
 
 .controls {
+  --ctrl-gap: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 30px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding-bottom: 20px;
+  padding-left: 6px;
+  padding-right: 6px;
   margin-top: auto;
+}
+
+.controls > * {
+  flex-shrink: 0;
+}
+
+.controls > *:not(:first-child) {
+  margin-left: var(--ctrl-gap);
 }
 
 .controlBtn {
@@ -194,7 +207,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: transform 0.2s, width 0.3s ease, height 0.3s ease,
+    opacity 0.25s ease, margin-left 0.3s ease;
 }
 
 .controlBtn:hover {
@@ -232,7 +246,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: transform 0.2s, width 0.3s ease, height 0.3s ease,
+    opacity 0.25s ease, margin-left 0.3s ease;
 }
 
 .activeControlBtn:disabled {
@@ -257,10 +272,46 @@
   fill: #fff;
 }
 
-.activeControlBtnHidden {
-  display: none;
+.controls > .ctrlHidden {
+  width: 0;
+  height: 0;
+  min-width: 0;
+  padding: 0;
+  margin-left: 0;
+  border-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: scale(0.4);
+  pointer-events: none;
 }
 
-.activeControlBtnFlex {
-  display: flex;
+@media (max-width: 520px) {
+  .uiLayer {
+    padding: 28px 12px;
+  }
+
+  .controls {
+    --ctrl-gap: 12px;
+    padding-bottom: 16px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .controlBtn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .controlBtn svg {
+    width: 28px;
+  }
+
+  .activeControlBtn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .activeControlBtn svg {
+    width: 22px;
+  }
 }

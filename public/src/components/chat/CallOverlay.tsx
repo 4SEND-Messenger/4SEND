@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { useI18n } from '../../hooks/useI18n';
+import { useSettings } from '../../context/SettingsContext';
 import { getSocket } from '../../services/socket';
 import styles from './CallOverlay.module.css';
 
@@ -9,6 +10,7 @@ interface CallOverlayProps {
   peerDisplay?: string;
   peerAvatar?: string;
   withVideo?: boolean;
+  ringFile?: string;
   signals?: Array<{ sdp?: unknown; candidate?: unknown }>;
   preloadedStream?: MediaStream | null;
   onAccept?: () => void;
@@ -49,8 +51,11 @@ const MicOffIcon = () => (
   </svg>
 );
 
-function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, preloadedStream, onAccept, onClose }: CallOverlayProps) {
+function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, ringFile, signals, preloadedStream, onAccept, onClose }: CallOverlayProps) {
   const { t } = useI18n();
+  const { ringVolume } = useSettings();
+  const ringVolumeRef = useRef(ringVolume);
+  ringVolumeRef.current = ringVolume;
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
   const [callSecs, setCallSecs] = useState(0);
@@ -68,6 +73,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const localStreamRef = useRef<MediaStream | null>(null);
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
+  const vibrateTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const streamStartedRef = useRef(false);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
@@ -102,7 +108,22 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     });
   };
 
+  const stopRingtone = useCallback(() => {
+    if (ringtoneRef.current) {
+      ringtoneRef.current.pause();
+      ringtoneRef.current.currentTime = 0;
+      ringtoneRef.current.loop = false;
+      ringtoneRef.current = null;
+    }
+    if (vibrateTimerRef.current) {
+      clearInterval(vibrateTimerRef.current);
+      vibrateTimerRef.current = undefined;
+      try { navigator.vibrate?.(0); } catch {}
+    }
+  }, []);
+
   const closeWithAnim = useCallback(() => {
+    stopRingtone();
     if (pcRef.current) {
       pcRef.current.close();
       pcRef.current = null;
@@ -118,7 +139,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
     }
     setClosing(true);
     setTimeout(() => onClose(), 300);
-  }, [onClose]);
+  }, [onClose, stopRingtone]);
 
   const createPeerConnection = useCallback(() => {
     if (pcRef.current) return pcRef.current;
@@ -333,34 +354,38 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
         setCallSecs(s => s + 1);
       }, 1000);
     }
-    if (type === 'incoming' || type === 'outgoing') {
-      const audio = new Audio('calling.mp3');
-      audio.loop = true;
-      audio.currentTime = 0;
-      audio.play().catch(() => {
-        const handler = () => {
-          if (ringtoneRef.current === audio && audio.paused) audio.play().catch(() => {});
-          document.removeEventListener('click', handler);
-          document.removeEventListener('touchstart', handler);
+    if (type === 'incoming') {
+      if (ringVolumeRef.current > 0) {
+        const audio = new Audio(ringFile || 'calling.mp3');
+        audio.loop = true;
+        audio.currentTime = 0;
+        audio.volume = Math.min(1, Math.max(0, ringVolumeRef.current));
+        audio.play().catch(() => {
+          const handler = () => {
+            if (ringtoneRef.current === audio && audio.paused) audio.play().catch(() => {});
+            document.removeEventListener('click', handler);
+            document.removeEventListener('touchstart', handler);
+          };
+          document.addEventListener('click', handler);
+          document.addEventListener('touchstart', handler);
+        });
+        ringtoneRef.current = audio;
+      } else if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        const buzz = () => {
+          try { navigator.vibrate([300, 200, 300]); } catch {}
         };
-        document.addEventListener('click', handler);
-        document.addEventListener('touchstart', handler);
-      });
-      ringtoneRef.current = audio;
+        buzz();
+        vibrateTimerRef.current = setInterval(buzz, 1600);
+      }
     }
     if (type === 'ended') {
       setTimeout(() => closeWithAnim(), 2000);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (ringtoneRef.current) {
-        ringtoneRef.current.pause();
-        ringtoneRef.current.currentTime = 0;
-        ringtoneRef.current.loop = false;
-        ringtoneRef.current = null;
-      }
+      stopRingtone();
     };
-  }, [type, closeWithAnim, startLocalStream, withVideo, sendOffer]);
+  }, [type, closeWithAnim, startLocalStream, withVideo, sendOffer, ringFile, stopRingtone]);
 
   useEffect(() => {
     return () => {
@@ -395,22 +420,12 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
 
   useEffect(() => {
     if (type === 'ended' || type === 'active') {
-      if (ringtoneRef.current) {
-        ringtoneRef.current.pause();
-        ringtoneRef.current.currentTime = 0;
-        ringtoneRef.current.loop = false;
-        ringtoneRef.current = null;
-      }
+      stopRingtone();
     }
-  }, [type]);
+  }, [type, stopRingtone]);
 
   const handleAccept = async () => {
-    if (ringtoneRef.current) {
-      ringtoneRef.current.pause();
-      ringtoneRef.current.currentTime = 0;
-      ringtoneRef.current.loop = false;
-      ringtoneRef.current = null;
-    }
+    stopRingtone();
     acceptedRef.current = true;
     await startLocalStream(!!withVideo);
     await signalChainRef.current.catch(() => {});
@@ -434,12 +449,7 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
   };
 
   const handleReject = () => {
-    if (ringtoneRef.current) {
-      ringtoneRef.current.pause();
-      ringtoneRef.current.currentTime = 0;
-      ringtoneRef.current.loop = false;
-      ringtoneRef.current = null;
-    }
+    stopRingtone();
     const socket = getSocket();
     socket.emit('call_response', { target: peer, answer: 'rejected' });
     closeWithAnim();
@@ -618,7 +628,8 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
         ? t('Соединение...')
         : formatTime(callSecs))
     : t('Звонок завершён');
-  const mediaActive = type === 'active' && ((hasVideo && !videoOff) || screenSharing);
+  const mediaActive = type === 'active' && ((hasVideo && !videoOff) || screenSharing || remoteHasVideo);
+  const cameraOn = hasVideo && !videoOff;
 
   return (
     <div className={`${styles.overlay} ${visible && !closing ? styles.overlayVisible : ''}`}>
@@ -660,15 +671,17 @@ function CallOverlay({ type, peer, peerDisplay, peerAvatar, withVideo, signals, 
               <button className={styles.activeControlBtn} onClick={toggleCallVideo} disabled={screenSharing} title={videoOff ? t('Вкл. видео') : t('Выкл. видео')}>
                 <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
               </button>
-              {hasVideo && (
-                <button className={styles.activeControlBtn} onClick={flipCallCamera} disabled={screenSharing} title={t('Переключить камеру')}>
-                  <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-                </button>
-              )}
               <button
-                className={`${styles.activeControlBtn} ${screenSharing ? styles.activeControlBtnOn : ''}`}
+                className={`${styles.activeControlBtn} ${cameraOn ? '' : styles.ctrlHidden}`}
+                onClick={flipCallCamera}
+                disabled={screenSharing}
+                title={t('Переключить камеру')}
+              >
+                <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+              </button>
+              <button
+                className={`${styles.activeControlBtn} ${screenSharing ? styles.activeControlBtnOn : ''} ${cameraOn ? styles.ctrlHidden : ''}`}
                 onClick={toggleScreenShare}
-                disabled={hasVideo && !videoOff}
                 title={screenSharing ? t('Остановить демонстрацию') : t('Демонстрация экрана')}
               >
                 <svg viewBox="0 0 24 24"><path d="M11 11h2v1.4q0 .175.15.238t.275-.063l2.225-2.225q.15-.15.15-.35t-.15-.35l-2.225-2.225q-.125-.125-.275-.062T13 7.6V9h-2q-1.25 0-2.125.875T8 12v1q0 .425.288.713T9 14t.713-.288T10 13v-1q0-.425.288-.712T11 11M2 21q-.425 0-.712-.288T1 20t.288-.712T2 19h20q.425 0 .713.288T23 20t-.288.713T22 21zm2-3q-.825 0-1.412-.587T2 16V5q0-.825.588-1.412T4 3h16q.825 0 1.413.588T22 5v11q0 .825-.587 1.413T20 18z"/></svg>

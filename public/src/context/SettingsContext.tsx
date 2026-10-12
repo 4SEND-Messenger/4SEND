@@ -24,6 +24,7 @@ interface SettingsState {
   scrollbarWidth: 'thin' | 'normal' | 'medium';
   sidebarWidth: 'compact' | 'normal' | 'medium' | 'large' | 'wide';
   volume: number;
+  ringVolume: number;
   notificationRepeat: number;
   autoLockMinutes: number;
   autoDeleteMonths: number;
@@ -72,6 +73,8 @@ interface SettingsContextType extends SettingsState {
   setSidebarWidth: (v: 'compact' | 'normal' | 'medium' | 'large' | 'wide') => void;
   volume: number;
   setVolume: (vol: number) => void;
+  ringVolume: number;
+  setRingVolume: (vol: number) => void;
   notificationRepeat: number;
   setNotificationRepeat: (minutes: number) => void;
   autoLockMinutes: number;
@@ -120,6 +123,7 @@ const initialSettings: SettingsState = {
   scrollbarWidth: 'normal',
   sidebarWidth: 'normal',
   volume: 1,
+  ringVolume: 0.5,
   notificationRepeat: 5,
   autoLockMinutes: 0,
   autoDeleteMonths: 6,
@@ -685,6 +689,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       scrollbarWidth: getLocalStorage('4send_scrollbarWidth', 'normal'),
       sidebarWidth: getLocalStorage('4send_sidebarWidth', 'normal'),
       volume: getLocalStorage('4send_volume', 1),
+      ringVolume: getLocalStorage('4send_ringVolume', 0.5),
       notificationRepeat: getLocalStorage('4send_notif_repeat', 5),
       autoLockMinutes: getLocalStorage('4send_lock_time', 0),
       autoDeleteMonths: getLocalStorage('4send_autoDeleteMonths', getLocalStorage('4send_auto_delete', 6)),
@@ -776,6 +781,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       setScrollbarWidth: (v) => updateSetting('scrollbarWidth', v),
       setSidebarWidth: (v) => updateSetting('sidebarWidth', v),
       setVolume: (v) => updateSetting('volume', v),
+      setRingVolume: (v) => updateSetting('ringVolume', v),
       setNotificationRepeat: (v) => updateSetting('notificationRepeat', v),
       setAutoLockMinutes: (v) => updateSetting('autoLockMinutes', v),
       setAutoDeleteMonths: (v) => updateSetting('autoDeleteMonths', v),

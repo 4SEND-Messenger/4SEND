@@ -29,6 +29,8 @@ interface UIContextType {
 
 const UIContext = createContext<UIContextType | null>(null);
 
+const MAX_VISIBLE_TOASTS = 3;
+
 export const UIProvider = ({ children }: { children: ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -42,7 +44,11 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
       type = typeOrError;
     }
     const id = Math.random().toString(36).slice(2);
-    setToasts(prev => [...prev, { id, text, isError: type === 'error', type }]);
+    setToasts(prev => {
+      if (prev.some(t => t.text === text && t.type === type)) return prev;
+      const next = [...prev, { id, text, isError: type === 'error', type }];
+      return next.length > MAX_VISIBLE_TOASTS ? next.slice(next.length - MAX_VISIBLE_TOASTS) : next;
+    });
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3000);

@@ -8,6 +8,7 @@ router.get('/api/sessions', authenticateToken, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.user.username }).lean();
         const sessions = (user.sessions || []).map(s => ({
+            token: s.token,
             device: s.device,
             ip: s.ip ? s.ip.replace(/\d+$/, 'xxx') : null,
             lastActive: s.lastActive,

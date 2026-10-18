@@ -24,6 +24,28 @@ router.post('/api/panic-password/setup', authenticateToken, securityLimiter, asy
     } catch { res.status(500).json({ error: 'Error' }); }
 });
 
+router.get('/api/panic-password/status', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username }).lean();
+        if (!user) return res.status(404).json({ error: 'Not found' });
+        res.json({ enabled: !!user.panicPassword });
+    } catch { res.status(500).json({ error: 'Error' }); }
+});
+
+router.post('/api/panic-password/remove', authenticateToken, securityLimiter, async (req, res) => {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ error: st('Введите основной пароль', detectLangReq(req)) });
+    try {
+        const user = await User.findOne({ username: req.user.username }).lean();
+        if (!user.panicPassword) return res.status(400).json({ error: st('Тревожный пароль не установлен', detectLangReq(req)) });
+        if (!(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ error: st('Неверный основной пароль', detectLangReq(req)) });
+        }
+        await User.updateOne({ username: req.user.username }, { $set: { panicPassword: null } });
+        res.json({ success: true });
+    } catch { res.status(500).json({ error: 'Error' }); }
+});
+
 router.get('/api/2fa/status', authenticateToken, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.user.username }).lean();

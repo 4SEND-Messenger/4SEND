@@ -119,3 +119,17 @@
 .warningText b {
   color: #ff3b30;
 }
+
+.error {
+  color: #ff4d4d;
+  font-size: calc(13px * var(--font-size-scale));
+  text-align: center;
+  margin-bottom: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

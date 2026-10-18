@@ -734,10 +734,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       try {
         const { api } = await import('../services/api');
-        const data = await api.get<{ autoLogoutDays?: number; autoDeleteMonths?: number }>('/api/security-settings');
+        const data = await api.get<{ autoLogoutDays?: number; autoDeleteMonths?: number; notificationRepeat?: number }>('/api/security-settings');
         if (cancelled || !data) return;
         const days = [1, 7, 30, 180].includes(Number(data.autoLogoutDays)) ? Number(data.autoLogoutDays) : null;
         const months = [3, 6, 12].includes(Number(data.autoDeleteMonths)) ? Number(data.autoDeleteMonths) : null;
+        const repeat = [0, 5, 10, 30, 60].includes(Number(data.notificationRepeat)) ? Number(data.notificationRepeat) : null;
         if (days !== null) {
           setLocalStorage('4send_autoLogoutDays', days);
           setSettings(prev => ({ ...prev, autoLogoutDays: days }));
@@ -745,6 +746,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         if (months !== null) {
           setLocalStorage('4send_autoDeleteMonths', months);
           setSettings(prev => ({ ...prev, autoDeleteMonths: months }));
+        }
+        if (repeat !== null) {
+          setLocalStorage('4send_notificationRepeat', repeat);
+          setSettings(prev => ({ ...prev, notificationRepeat: repeat }));
         }
       } catch { /* ignore */ }
     })();

@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
+import { useUI } from '../../context/UIContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useI18n } from '../../hooks/useI18n';
+import { api, apiErrorMessage } from '../../services/api';
 import ModalShell from './ModalShell';
 import styles from './SubModalOptions.module.css';
 
@@ -19,11 +21,22 @@ const options = [
 
 export default function NotificationRepeatModal({ isOpen, onClose }: Props) {
   const { notificationRepeat, setNotificationRepeat } = useSettings();
+  const { showToast } = useUI();
   const { t } = useI18n();
 
-  const handleSelect = useCallback((value: number) => {
+  const handleSelect = useCallback(async (value: number) => {
     setNotificationRepeat(value);
-  }, [setNotificationRepeat]);
+    try {
+      const res = await api.post<{ success?: boolean; error?: string }>('/api/notification-repeat', { minutes: value });
+      if (res?.error) {
+        showToast(res.error, true);
+        return;
+      }
+      showToast(t('Сохранено'), false);
+    } catch (e) {
+      showToast(apiErrorMessage(e, t('Ошибка сети')), true);
+    }
+  }, [setNotificationRepeat, showToast, t]);
 
   return (
     <ModalShell isOpen={isOpen} onClose={onClose} title={t('Повтор уведомлений')}>

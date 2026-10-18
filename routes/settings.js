@@ -48,9 +48,11 @@ router.get('/api/security-settings', authenticateToken, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.user.username }).lean();
         if (!user) return res.status(404).json({ error: 'Not found' });
+        const repeat = Number(user.notificationRepeat);
         res.json({
             autoLogoutDays: user.autoLogoutDays || 7,
-            autoDeleteMonths: user.autoDeleteMonths || 6
+            autoDeleteMonths: user.autoDeleteMonths || 6,
+            notificationRepeat: Number.isFinite(repeat) ? repeat : 5
         });
     } catch (err) {
         res.status(500).json({ error: "DB Error" });

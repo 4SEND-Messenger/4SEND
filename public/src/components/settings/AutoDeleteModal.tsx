@@ -31,9 +31,9 @@ export default function AutoDeleteModal({ isOpen, onClose }: Props) {
   }, [setAutoDeleteMonths, onClose]);
 
   return (
-    <ModalShell isOpen={isOpen} onClose={onClose} title={t('Автоудаление сообщений')}>
+    <ModalShell isOpen={isOpen} onClose={onClose} title={t('Автоудаление аккаунта')}>
       <div className={styles.description}>
-        {t('Сообщения в этом чате будут автоматически удаляться спустя выбранное время.')}
+        {t('Если вы не будете заходить в сеть выбранное время, аккаунт и все ваши данные будут удалены безвозвратно.')}
       </div>
 
       <div className={styles.options}>
